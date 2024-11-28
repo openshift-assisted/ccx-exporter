@@ -15,6 +15,13 @@ COLOR_GREEN  := $(escape)[0;32m
 COLOR_BLUE   := $(escape)[94m
 BOLD         := $(escape)[1m
 
+# build and deploy variables
+GIT_COMMIT := $(shell git rev-list -1 HEAD --abbrev-commit)
+
+IMAGE_NAME := ccx-exporter
+IMAGE_TAG := $(GIT_COMMIT)
+IMAGE_FULL ?= $(IMAGE_NAME):$(IMAGE_TAG)
+
 BUILD_DIR=$(CURDIR)/build
 
 
@@ -49,7 +56,9 @@ help.all:
 ## Build
 #########
 
-.PHONY: build.vendor build.vendor.tidy build.prepare
+BUILD_ENV=CGO_ENABLED=0
+
+.PHONY: build.vendor build.vendor.tidy build.prepare build.local build.docker
 
 ## build.vendor: Get dependencies locally
 build.vendor:
@@ -62,6 +71,23 @@ build.vendor.tidy:
 ## build.prepare: Create build/ folder
 build.prepare:
 	@mkdir -p $(BUILD_DIR)
+
+## build.local: Build binary app
+build.local: build.prepare
+	$(BUILD_ENV) go build \
+		-mod readonly     \
+		-ldflags "-s -w -extldflags -static \
+		  -X github.com/prometheus/common/version.Revision=$(GIT_COMMIT)                    \
+		  -X github.com/prometheus/common/version.Branch=$(shell git branch --show-current) \
+		  -X 'github.com/prometheus/common/version.BuildUser=$(shell whoami)'               \
+		  -X 'github.com/prometheus/common/version.BuildDate=$(shell date)'                 \
+		" \
+		-o $(BUILD_DIR)/ccx-exporter \
+		$(CURDIR)/cmd/ccx-exporter/main.go
+
+## build.docker: Build image and tag
+build.docker:
+	docker build --build-arg version=$(GIT_COMMIT) -t $(IMAGE_FULL) .
 
 
 ########
