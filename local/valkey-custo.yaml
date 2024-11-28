@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-credentials
+  namespace: ccx-exporter
+type: Opaque
+data:
+  password: TG9jYWxQYXNzd29yZA== # LocalPassword
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey-ccx-exporter-external
+  labels:
+    app.kubernetes.io/name: valkey-ccx-exporter
+    app.kubernetes.io/instance: ccx-exporter
+spec:
+  type: NodePort
+  ports:
+    - name: tcp-valkey
+      port: 6379
+      targetPort: valkey
+      nodePort: 30379
+  selector:
+    app.kubernetes.io/name: valkey-ccx-exporter
+    app.kubernetes.io/instance: ccx-exporter
