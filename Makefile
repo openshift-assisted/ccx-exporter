@@ -29,13 +29,14 @@ BUILD_DIR := $(CURDIR)/build
 ## High level targets
 ######################
 
-.PHONY: help format build test local
+.PHONY: help format build check test local
 
-help: help.all
+help:   help.all
 format: format.imports format.code
-build: build.docker
-test: test.e2e
-local: local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
+build:  build.docker
+check:  check.licenses check.imports check.fmt check.lint
+test:   test.e2e
+local:  local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
 
 
 #########
@@ -101,6 +102,29 @@ build.local: build.prepare
 ## build.docker: Build image and tag
 build.docker:
 	docker build --build-arg version=$(GIT_COMMIT) -t $(IMAGE_FULL) .
+
+
+################
+## Check targets
+#################
+
+.PHONY: check.licenses check.imports check.fmt check.lint
+
+## check.licenses: Check thirdparties' licences (allow-list in .wwhrd.yml)
+check.licenses:
+	@wwhrd check -q
+
+## check.imports: Check if imports are well formated: builtin -> external -> rome -> repo
+check.imports:
+	@goimports -l -local $(GO_MODULE) $(FILES_LIST) | wc -l | grep -q 0
+
+## check.fmt: Check if code is formated according gofumpt rules
+check.fmt:
+	@gofumpt -l $(FILES_LIST) | wc -l | grep -q 0
+
+## check.lint: Run Go linter across the code base without fixing issues
+check.lint:
+	@golangci-lint run --timeout 10m
 
 
 #######
