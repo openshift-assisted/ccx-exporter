@@ -51,7 +51,10 @@ var _ = Describe("Checking the happy path", func() {
 	})
 
 	AfterEach(func() {
+		// Keep all components if the test failed
 		if CurrentSpecReport().Failed() {
+			GinkgoLogr.Info("Test failed", "config", testConfig)
+
 			return
 		}
 

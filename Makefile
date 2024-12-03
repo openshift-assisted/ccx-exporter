@@ -29,10 +29,11 @@ BUILD_DIR=$(CURDIR)/build
 ## High level targets
 ######################
 
-.PHONY: help build local
+.PHONY: help build test local
 
 help: help.all
 build: build.docker
+test: test.e2e
 local: local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
 
 
@@ -81,6 +82,17 @@ build.local: build.prepare
 ## build.docker: Build image and tag
 build.docker:
 	docker build --build-arg version=$(GIT_COMMIT) -t $(IMAGE_FULL) .
+
+
+#######
+## Test
+########
+
+.PHONY: test.e2e
+
+## test.e2e: Run e2e test
+test.e2e: build.docker local.import
+	@go test ./test/e2e/...
 
 
 ########
