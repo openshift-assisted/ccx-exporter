@@ -7,6 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
 	"github.com/openshift-assisted/ccx-exporter/test/e2e"
 )
 
@@ -47,7 +48,6 @@ var _ = Describe("Checking the happy path", func() {
 				g.Expect(len(objects)).To(Equal(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
-
 	})
 
 	AfterEach(func() {

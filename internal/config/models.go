@@ -56,8 +56,7 @@ type KafkaBroker struct {
 	Creds KafkaCreds
 }
 
-type KafkaCreds struct {
-}
+type KafkaCreds struct{}
 
 func (c KafkaCreds) String() string {
 	return ""

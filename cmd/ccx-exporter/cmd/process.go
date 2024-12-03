@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/openshift-assisted/ccx-exporter/internal/config"
-	"github.com/openshift-assisted/ccx-exporter/internal/log"
 	"github.com/prometheus/common/version"
 	"github.com/spf13/cobra"
+
+	"github.com/openshift-assisted/ccx-exporter/internal/config"
+	"github.com/openshift-assisted/ccx-exporter/internal/log"
 )
 
 // processCmd represents the process command

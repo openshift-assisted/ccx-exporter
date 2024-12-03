@@ -19,19 +19,20 @@ BOLD         := $(escape)[1m
 GIT_COMMIT := $(shell git rev-list -1 HEAD --abbrev-commit)
 
 IMAGE_NAME := ccx-exporter
-IMAGE_TAG := $(GIT_COMMIT)
+IMAGE_TAG  := $(GIT_COMMIT)
 IMAGE_FULL ?= $(IMAGE_NAME):$(IMAGE_TAG)
 
-BUILD_DIR=$(CURDIR)/build
+BUILD_DIR := $(CURDIR)/build
 
 
 #####################
 ## High level targets
 ######################
 
-.PHONY: help build test local
+.PHONY: help format build test local
 
 help: help.all
+format: format.imports format.code
 build: build.docker
 test: test.e2e
 local: local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
@@ -53,11 +54,29 @@ help.all:
 	}'
 
 
+#################
+## Format targets
+##################
+
+GO_MODULE  := $(shell head -n 1 go.mod | cut -d ' ' -f 2)
+FILES_LIST := cmd/ internal/ test/
+
+.PHONY: format.imports format.code
+
+## format.imports: Format go imports
+format.imports:
+	@goimports -w -local $(GO_MODULE) $(FILES_LIST)
+
+## format.code: Format go code
+format.code:
+	@gofumpt -w $(FILES_LIST)
+
+
 ########
 ## Build
 #########
 
-BUILD_ENV=CGO_ENABLED=0
+BUILD_ENV := CGO_ENABLED=0
 
 .PHONY: build.prepare build.local build.docker
 
