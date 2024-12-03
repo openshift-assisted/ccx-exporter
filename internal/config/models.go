@@ -7,9 +7,9 @@ type Config struct {
 	Metrics         Metrics
 	Logs            Logs
 	DeadLetterQueue S3
-	Input           Kafka
-	Cache           Valkey
-	S3Output        S3
+	Kafka           Kafka
+	Valkey          Valkey
+	S3              S3
 }
 
 type Metrics struct {
@@ -30,7 +30,7 @@ const (
 
 type S3 struct {
 	Bucket string
-	Creds  *AWSCreds
+	Creds  AWSCreds
 }
 
 type AWSCreds struct {
@@ -52,8 +52,8 @@ type Kafka struct {
 }
 
 type KafkaBroker struct {
-	URL   string
-	Creds *KafkaCreds
+	URLs  string
+	Creds KafkaCreds
 }
 
 type KafkaCreds struct {
@@ -71,7 +71,7 @@ type KafkaConsumer struct {
 type Valkey struct {
 	URL      string
 	Database string
-	Creds    *ValkeyCreds
+	Creds    ValkeyCreds
 }
 
 type ValkeyCreds struct {

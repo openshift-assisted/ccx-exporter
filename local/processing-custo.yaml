@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dlq-aws-creds
+  namespace: ccx-exporter
+type: Opaque
+data:
+  accesskeyid: dXNlbGVzcw== # useless
+  secretaccesskey: dXNlbGVzcw== # useless
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-creds
+  namespace: ccx-exporter
+type: Opaque
+data:
+  accesskeyid: dXNlbGVzcw== # useless
+  secretaccesskey: dXNlbGVzcw== # useless

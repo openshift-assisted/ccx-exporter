@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/viper"
 )
@@ -41,21 +40,6 @@ func Parse(confFile string) (*Config, error) {
 // Passwords and sensitive information should be hidden with by implementing Stringer.
 func Get() Config {
 	return conf
-}
-
-// GetLogsConfig returns the configuration to set to the logger.
-func GetLogsConfig() Logs {
-	return conf.Logs
-}
-
-// GetDefaultTimeout returns the default duration for timeout.
-func GetDefaultTimeout() time.Duration {
-	return conf.DefaultTimeout
-}
-
-// GetMetricConfig returns the config used for prometheus metrics.
-func GetMetricsConfig() Metrics {
-	return conf.Metrics
 }
 
 func setDefault() {

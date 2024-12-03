@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: redis-credentials
+  name: valkey-creds
   namespace: ccx-exporter
 type: Opaque
 data:

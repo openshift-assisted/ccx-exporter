@@ -1,27 +1,29 @@
-
 ---
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
   name: valkey-ccx-exporter
 parameters:
+- name: VALKEY_NAME
+  value: valkey-ccx-exporter
 - name: NAMESPACE
   value: ccx-exporter
-- name: VALKEY_IMAGE_TAG
-  value: bf91acf0827dc5db216164aafe3d34beb245dcec
 - name: VALKEY_IMAGE_NAME
   value: quay.io/sclorg/valkey-7-c10s
+- name: VALKEY_IMAGE_TAG
+  value: bf91acf0827dc5db216164aafe3d34beb245dcec
 - name: VALKEY_STORAGE
   value: 5Gi
 - name: VALKEY_CREDENTIALS_SECRETNAME
-  value: redis-credentials
+  value: valkey-creds
+
 objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: valkey-ccx-exporter-configuration
+    name: ${VALKEY_NAME}-configuration
     labels:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
   data:
     valkey.conf: |-
@@ -40,9 +42,9 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: valkey-ccx-exporter-health
+    name: ${VALKEY_NAME}-health
     labels:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
   data:
     ping_readiness_local.sh: |-
@@ -89,9 +91,9 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: valkey-ccx-exporter-scripts
+    name: ${VALKEY_NAME}-scripts
     labels:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
   data:
     start-master.sh: |
@@ -107,9 +109,9 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: valkey-ccx-exporter-headless
+    name: ${VALKEY_NAME}-headless
     labels:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
   spec:
     type: ClusterIP
@@ -119,14 +121,14 @@ objects:
         port: 6379
         targetPort: valkey
     selector:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
 - apiVersion: v1
   kind: Service
   metadata:
-    name: valkey-ccx-exporter
+    name: ${VALKEY_NAME}
     labels:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
   spec:
     type: ClusterIP
@@ -138,29 +140,29 @@ objects:
         targetPort: valkey
         nodePort: null
     selector:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
 - apiVersion: apps/v1
   kind: StatefulSet
   metadata:
-    name: valkey-ccx-exporter
+    name: ${VALKEY_NAME}
     labels:
-      app.kubernetes.io/name: valkey-ccx-exporter
+      app.kubernetes.io/name: ${VALKEY_NAME}
       app.kubernetes.io/instance: ccx-exporter
   spec:
     replicas: 1
     selector:
       matchLabels:
-        app.kubernetes.io/name: valkey-ccx-exporter
+        app.kubernetes.io/name: ${VALKEY_NAME}
         app.kubernetes.io/instance: ccx-exporter
-    serviceName: valkey-ccx-exporter-headless
+    serviceName: ${VALKEY_NAME}-headless
     updateStrategy:
       rollingUpdate: {}
       type: RollingUpdate
     template:
       metadata:
         labels:
-          app.kubernetes.io/name: valkey-ccx-exporter
+          app.kubernetes.io/name: ${VALKEY_NAME}
           app.kubernetes.io/instance: ccx-exporter
       spec:
         affinity:
@@ -219,7 +221,7 @@ objects:
                   - -c
                   - /health/ping_liveness_local.sh 5
             readinessProbe:
-              initialDelaySeconds: 20
+              initialDelaySeconds: 5
               periodSeconds: 5
               timeoutSeconds: 2
               successThreshold: 1
@@ -232,7 +234,7 @@ objects:
             volumeMounts:
               - name: start-scripts
                 mountPath: /opt/valkey/scripts/start-scripts
-              - name: valkey-ccx-exporter
+              - name: ${VALKEY_NAME}
                 mountPath: /data
               - name: config
                 mountPath: /opt/valkey/mounted-etc
@@ -241,20 +243,20 @@ objects:
         volumes:
           - name: start-scripts
             configMap:
-              name: valkey-ccx-exporter-scripts
+              name: ${VALKEY_NAME}-scripts
               defaultMode: 0755
           - name: config
             configMap:
-              name: valkey-ccx-exporter-configuration
+              name: ${VALKEY_NAME}-configuration
           - name: health
             configMap:
-              name: valkey-ccx-exporter-health
+              name: ${VALKEY_NAME}-health
               defaultMode: 0755
     volumeClaimTemplates:
       - metadata:
-          name: valkey-ccx-exporter
+          name: ${VALKEY_NAME}
           labels:
-            app.kubernetes.io/name: valkey-ccx-exporter
+            app.kubernetes.io/name: ${VALKEY_NAME}
             app.kubernetes.io/instance: ccx-exporter
         spec:
           accessModes:

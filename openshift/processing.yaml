@@ -1,0 +1,151 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: ccx-exporter
+parameters:
+# Deployment
+- name: DEPLOYMENT_NAME
+  value: ccx-exporter
+- name: IMAGE_NAME
+  value: ccx-exporter
+- name: IMAGE_TAG
+  value: latest
+- name: REPLICAS
+  value: "1"
+- name: IMAGE_PULL_POLICY
+  value: IfNotPresent
+- name: CPU_LIMIT
+  value: "1"
+- name: CPU_REQUEST
+  value: 10m
+- name: MEMORY_LIMIT
+  value: 512Mi
+- name: MEMORY_REQUEST
+  value: 256Mi
+
+# Logs
+- name: LOGS_LEVEL
+  value: "0"
+
+# Valkey
+- name: VALKEY_URL
+  value: valkey-0.valkey:6379
+- name: VALKEY_PASSWORD_SECRETNAME
+  value: valkey-creds
+- name: VALKEY_PASSWORD_SECRETKEY
+  value: password
+
+# DLQ
+- name: DQL_S3_BUCKET
+  value: ccx-processing-dlq
+- name: DLQ_AWS_ACCESS_KEY_ID_SECRETNAME
+  value: dlq-aws-creds
+- name: DLQ_AWS_ACCESS_KEY_ID_SECRETKEY
+  value: accesskeyid
+- name: DLQ_AWS_SECRET_ACCESS_KEY_SECRETNAME
+  value: dlq-aws-creds
+- name: DLQ_AWS_SECRET_ACCESS_KEY_SECRETKEY
+  value: secretaccesskey
+
+# Kafka
+- name: KAFKA_BROKERS
+  value: kraft-0.kraft:9092
+- name: KAFKA_TOPIC
+  value: assisted-service-events
+
+# s3
+- name: S3_BUCKET
+  value: ccx-processing-result
+- name: AWS_ACCESS_KEY_ID_SECRETNAME
+  value: aws-creds
+- name: AWS_ACCESS_KEY_ID_SECRETKEY
+  value: accesskeyid
+- name: AWS_SECRET_ACCESS_KEY_SECRETNAME
+  value: aws-creds
+- name: AWS_SECRET_ACCESS_KEY_SECRETKEY
+  value: secretaccesskey
+
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ${DEPLOYMENT_NAME}
+  data:
+    config.yaml: |-
+      log:
+        level: ${LOGS_LEVEL}
+      deadletterqueue:
+        bucket: ${DQL_S3_BUCKET}
+      kafka:
+        broker:
+          urls: ${KAFKA_BROKERS}
+        consumer:
+          topic: ${KAFKA_TOPIC}
+          group: ccx-exporter
+      valkey:
+        url: ${VALKEY_URL}
+      s3:
+        bucket: ${S3_BUCKET}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: ${DEPLOYMENT_NAME}
+  spec:
+    replicas: ${{REPLICAS}}
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: ${DEPLOYMENT_NAME}
+    template:
+      metadata:
+        labels:
+          app.kubernetes.io/name: ${DEPLOYMENT_NAME}
+      spec:
+        containers:
+        - args:
+          - process
+          - --config
+          - /etc/processing/config.yaml
+          env:
+          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_ACCESSKEYID
+            valueFrom:
+              secretKeyRef:
+                key: ${DLQ_AWS_ACCESS_KEY_ID_SECRETKEY}
+                name: ${DLQ_AWS_ACCESS_KEY_ID_SECRETNAME}
+          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_SECRETACCESSKEY
+            valueFrom:
+              secretKeyRef:
+                key: ${DLQ_AWS_SECRET_ACCESS_KEY_SECRETKEY}
+                name: ${DLQ_AWS_SECRET_ACCESS_KEY_SECRETNAME}
+          - name: CCXEXPORTER_S3_CREDS_ACCESSKEYID
+            valueFrom:
+              secretKeyRef:
+                key: ${AWS_ACCESS_KEY_ID_SECRETKEY}
+                name: ${AWS_ACCESS_KEY_ID_SECRETNAME}
+          - name: CCXEXPORTER_S3_CREDS_SECRETACCESSKEY
+            valueFrom:
+              secretKeyRef:
+                key: ${AWS_SECRET_ACCESS_KEY_SECRETKEY}
+                name: ${AWS_SECRET_ACCESS_KEY_SECRETNAME}
+          - name: CCXEXPORTER_VALKEY_CREDS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: ${VALKEY_PASSWORD_SECRETKEY}
+                name: ${VALKEY_PASSWORD_SECRETNAME}
+          image: ${IMAGE_NAME}:${IMAGE_TAG}
+          imagePullPolicy: ${IMAGE_PULL_POLICY}
+          name: processing
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+          volumeMounts:
+          - name: config
+            mountPath: /etc/processing/
+        volumes:
+        - name: config
+          configMap:
+            name: ${DEPLOYMENT_NAME}

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
 	"github.com/openshift-assisted/ccx-exporter/internal/log"
@@ -32,12 +33,14 @@ var processCmd = &cobra.Command{
 			"version", version.Info(),
 			"buildContext", version.BuildContext(),
 		)
-		logger.Info("Using config", "config", conf)
+		logger.Info("Using config", "config", fmt.Sprintf("%+v", conf))
 
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("process called")
+
+		time.Sleep(time.Hour)
 
 		return nil
 	},
