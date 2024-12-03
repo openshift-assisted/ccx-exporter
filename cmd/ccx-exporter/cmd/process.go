@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
-	"time"
 
 	"github.com/prometheus/common/version"
 	"github.com/spf13/cobra"
 
+	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
 	"github.com/openshift-assisted/ccx-exporter/internal/log"
 )
@@ -38,12 +39,33 @@ var processCmd = &cobra.Command{
 
 		return nil
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("process called")
+	Run: func(cmd *cobra.Command, args []string) {
+		logger := log.Logger()
 
-		time.Sleep(time.Hour)
+		// Set max procs based on cpu limits
+		err := common.SetMaxProcs()
+		if err != nil {
+			logger.Error(err, "failed to set max procs")
 
-		return nil
+			return
+		}
+
+		// Set max memory
+		err = common.SetMemLimit()
+		if err != nil {
+			logger.Error(err, "failed to set mem limit")
+
+			return
+		}
+
+		// Listen to sigterm and interrupt signals
+		ctx := common.SetupSignalHandler(context.Background())
+
+		// Create pipeline
+
+		// Start pipeline
+
+		logger.V(2).Info("Processing stopped")
 	},
 }
 

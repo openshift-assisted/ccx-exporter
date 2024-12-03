@@ -60,7 +60,7 @@ help.all:
 ##################
 
 GO_MODULE  := $(shell head -n 1 go.mod | cut -d ' ' -f 2)
-FILES_LIST := cmd/ internal/ test/
+FILES_LIST := cmd/ internal/ pkg/ test/
 
 .PHONY: format.imports format.code
 
