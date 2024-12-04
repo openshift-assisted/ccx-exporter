@@ -80,6 +80,7 @@ objects:
       kafka:
         broker:
           urls: ${KAFKA_BROKERS}
+          version: "3.6.0"
         consumer:
           topic: ${KAFKA_TOPIC}
           group: ccx-exporter

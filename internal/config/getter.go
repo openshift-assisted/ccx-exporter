@@ -36,10 +36,10 @@ func Parse(confFile string) (*Config, error) {
 	return &conf, nil
 }
 
-// Get returns all configuration.
+// KafkaConfig returns kafka configuration.
 // Passwords and sensitive information should be hidden with by implementing Stringer.
-func Get() Config {
-	return conf
+func KafkaConfig() Kafka {
+	return conf.Kafka
 }
 
 func setDefault() {

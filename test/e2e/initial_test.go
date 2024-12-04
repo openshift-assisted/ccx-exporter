@@ -41,9 +41,9 @@ var _ = Describe("Checking the happy path", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("should eventually create a file in s3", func(ctx SpecContext) {
+		It("should eventually create a file in s3 (dlq)", func(ctx SpecContext) {
 			Eventually(func(g Gomega, ctx context.Context) {
-				objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "/")
+				objects, err := testContext.ListS3Objects(ctx, testConfig.DLQS3Bucket, "/")
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(len(objects)).To(Equal(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())

@@ -52,8 +52,9 @@ type Kafka struct {
 }
 
 type KafkaBroker struct {
-	URLs  string
-	Creds KafkaCreds
+	URLs    string
+	Version string
+	Creds   KafkaCreds
 }
 
 type KafkaCreds struct{}
