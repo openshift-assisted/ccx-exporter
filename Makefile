@@ -29,14 +29,15 @@ BUILD_DIR := $(CURDIR)/build
 ## High level targets
 ######################
 
-.PHONY: help format build check test local
+.PHONY: help format build generate check test local
 
-help:   help.all
-format: format.imports format.code
-build:  build.docker
-check:  check.licenses check.imports check.fmt check.lint
-test:   test.e2e
-local:  local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
+help:     help.all
+format:   format.imports format.code
+build:    build.docker
+generate: generate.mocks
+check:    check.licenses check.imports check.fmt check.lint check.mocks
+test:     test.e2e
+local:    local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
 
 
 #########
@@ -104,11 +105,23 @@ build.docker:
 	docker build --build-arg version=$(GIT_COMMIT) -t $(IMAGE_FULL) .
 
 
+###########
+## Generate
+############
+
+.PHONY: generate.mocks
+
+## generate.mocks: Generate mocks with mockgen
+generate.mocks:
+	@find $(FILES_LIST) -type d -name mock -exec rm -rv {} +
+	@go generate ./pkg/...
+
+
 ################
 ## Check targets
 #################
 
-.PHONY: check.licenses check.imports check.fmt check.lint
+.PHONY: check.licenses check.imports check.fmt check.lint check.mocks
 
 ## check.licenses: Check thirdparties' licences (allow-list in .wwhrd.yml)
 check.licenses:
@@ -126,16 +139,24 @@ check.fmt:
 check.lint:
 	@golangci-lint run --timeout 10m
 
+## check.mocks: Ensure mocks have been regenerated
+check.mocks:
+	@git diff --name-only | grep mock | wc -l | grep -q 0
+
 
 #######
 ## Test
 ########
 
-.PHONY: test.e2e
+.PHONY: test.e2e test.unit
 
 ## test.e2e: Run e2e test
 test.e2e: build.docker local.import
 	@go test ./test/e2e/...
+
+## test.unit: Run unit tests
+test.unit:
+	@go test ./pkg/... ./cmd/... ./internal/...
 
 
 ########
