@@ -26,6 +26,7 @@ local.kubeconfig: build.prepare
 .PHONY: local.context
 local.context: local.kubeconfig
 	@$(KUBE_ENV) kubectl config use-context $(CONTEXT_NAME)
+	@$(KUBE_ENV) kubectl config set-context --current --namespace=$(NAMESPACE)
 
 .PHONY: local.namespace
 local.namespace: local.context
@@ -89,11 +90,17 @@ local.processing: local.context
 		-p LOGS_LEVEL="$(LOGS_LEVEL)" \
 		-p DEPLOYMENT_NAME=$(DEPLOYMENT_NAME) \
 		-p VALKEY_URL=$(VALKEY_URL) \
-		-p DQL_S3_BUCKET=$(DQL_S3_BUCKET) \
 		-p KAFKA_TOPIC=$(KAFKA_TOPIC) \
+		-p S3_USE_PATH_STYLE=true \
+		-p S3_BASE_ENDPOINT=http://localstack:31566 \
 		-p S3_BUCKET=$(S3_BUCKET) \
+		-p DQL_S3_BUCKET=$(DQL_S3_BUCKET) \
 	| oc apply -n $(NAMESPACE) -f -
 	@$(KUBE_WAIT) deployment/$(DEPLOYMENT_NAME)
+
+.PHONY: local.processing.update
+## local.processing.update: Rebuild & redeploy the image
+local.processing.update: build.docker local.import local.processing
 
 .PHONY: local.delete.processing
 local.delete.processing: local.context

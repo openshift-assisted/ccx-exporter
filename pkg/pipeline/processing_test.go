@@ -383,7 +383,6 @@ var _ = Describe("Testing duration metrics decorator", func() {
 
 				err = metrics.Process(context.TODO(), data)
 				Expect(err).NotTo(HaveOccurred())
-
 			})
 
 			It("should returns the right number in the metrics", func() {

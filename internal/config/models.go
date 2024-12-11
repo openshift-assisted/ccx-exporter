@@ -3,13 +3,13 @@ package config
 import "time"
 
 type Config struct {
-	DefaultTimeout  time.Duration
-	Metrics         Metrics
-	Logs            Logs
-	DeadLetterQueue S3
-	Kafka           Kafka
-	Valkey          Valkey
-	S3              S3
+	GracefulDuration time.Duration
+	Metrics          Metrics
+	Logs             Logs
+	DeadLetterQueue  S3
+	Kafka            Kafka
+	Valkey           Valkey
+	S3               S3
 }
 
 type Metrics struct {
@@ -29,8 +29,11 @@ const (
 )
 
 type S3 struct {
-	Bucket string
-	Creds  AWSCreds
+	Bucket       string
+	BaseEndpoint string
+	Region       string
+	UsePathStyle bool
+	Creds        AWSCreds
 }
 
 type AWSCreds struct {
@@ -69,9 +72,8 @@ type KafkaConsumer struct {
 }
 
 type Valkey struct {
-	URL      string
-	Database string
-	Creds    ValkeyCreds
+	URL   string
+	Creds ValkeyCreds
 }
 
 type ValkeyCreds struct {

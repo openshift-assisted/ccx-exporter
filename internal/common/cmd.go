@@ -3,14 +3,19 @@ package common
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/KimMachineGun/automemlimit/memlimit"
 	"github.com/dustin/go-humanize"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/automaxprocs/maxprocs"
 
+	"github.com/openshift-assisted/ccx-exporter/internal/config"
 	"github.com/openshift-assisted/ccx-exporter/internal/log"
 )
 
@@ -64,4 +69,31 @@ func SetMemLimit() error {
 	logger.V(1).Info("Go memlimit configured", "ratio", memLimitRatio, "limit", humanize.IBytes(uint64(limit)))
 
 	return nil
+}
+
+type CloseFunc func(context.Context) error
+
+func StartPrometheusServer(conf config.Metrics, gatherer prometheus.Gatherer) CloseFunc {
+	logger := log.Logger()
+
+	logger.V(4).Info("Starting prometheus server")
+
+	srv := &http.Server{Addr: fmt.Sprintf(":%v", conf.Port)}
+	srv.SetKeepAlivesEnabled(true)
+	srv.IdleTimeout = 5 * time.Second
+
+	router := http.NewServeMux()
+	router.Handle("/metrics", promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{}))
+	srv.Handler = router
+
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			logger.Error(err, "Prometheus server stopped")
+		}
+	}()
+
+	return func(ctx context.Context) error {
+		return srv.Shutdown(ctx)
+	}
 }

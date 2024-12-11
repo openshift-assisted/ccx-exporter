@@ -36,6 +36,25 @@ parameters:
 - name: VALKEY_PASSWORD_SECRETKEY
   value: password
 
+
+# common s3
+- name: S3_BASE_ENDPOINT
+  value: ""
+- name: S3_USE_PATH_STYLE
+  value: "false"
+
+# s3
+- name: S3_BUCKET
+  value: ccx-processing-result
+- name: AWS_ACCESS_KEY_ID_SECRETNAME
+  value: aws-creds
+- name: AWS_ACCESS_KEY_ID_SECRETKEY
+  value: accesskeyid
+- name: AWS_SECRET_ACCESS_KEY_SECRETNAME
+  value: aws-creds
+- name: AWS_SECRET_ACCESS_KEY_SECRETKEY
+  value: secretaccesskey
+
 # DLQ
 - name: DQL_S3_BUCKET
   value: ccx-processing-dlq
@@ -54,18 +73,6 @@ parameters:
 - name: KAFKA_TOPIC
   value: assisted-service-events
 
-# s3
-- name: S3_BUCKET
-  value: ccx-processing-result
-- name: AWS_ACCESS_KEY_ID_SECRETNAME
-  value: aws-creds
-- name: AWS_ACCESS_KEY_ID_SECRETKEY
-  value: accesskeyid
-- name: AWS_SECRET_ACCESS_KEY_SECRETNAME
-  value: aws-creds
-- name: AWS_SECRET_ACCESS_KEY_SECRETKEY
-  value: secretaccesskey
-
 objects:
 - apiVersion: v1
   kind: ConfigMap
@@ -77,6 +84,8 @@ objects:
         level: ${LOGS_LEVEL}
       deadletterqueue:
         bucket: ${DQL_S3_BUCKET}
+        baseEndpoint: ${S3_BASE_ENDPOINT}
+        usePathStyle: ${S3_USE_PATH_STYLE}
       kafka:
         broker:
           urls: ${KAFKA_BROKERS}
@@ -88,6 +97,8 @@ objects:
         url: ${VALKEY_URL}
       s3:
         bucket: ${S3_BUCKET}
+        baseEndpoint: ${S3_BASE_ENDPOINT}
+        usePathStyle: ${S3_USE_PATH_STYLE}
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
