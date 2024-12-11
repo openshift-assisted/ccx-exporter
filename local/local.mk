@@ -8,7 +8,7 @@ KUBE_WAIT         := $(KUBE_ENV) kubectl wait -n $(NAMESPACE) --timeout=120s --f
 LOGS_LEVEL := 10
 
 DEPLOYMENT_NAME := ccx-exporter
-VALKEY_URL      := valkey-0.valkey:6379
+VALKEY_URL      := valkey-ccx-exporter-0.valkey-ccx-exporter-headless:6379
 DQL_S3_BUCKET   := ccx-processing-dlq
 KAFKA_TOPIC     := assisted-service-events
 S3_BUCKET       := ccx-processing-result

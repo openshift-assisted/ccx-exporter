@@ -30,12 +30,11 @@ parameters:
 
 # Valkey
 - name: VALKEY_URL
-  value: valkey-0.valkey:6379
+  value: valkey-ccx-exporter-0.valkey-ccx-exporter-headless:6379
 - name: VALKEY_PASSWORD_SECRETNAME
   value: valkey-creds
 - name: VALKEY_PASSWORD_SECRETKEY
   value: password
-
 
 # common s3
 - name: S3_BASE_ENDPOINT
