@@ -101,10 +101,15 @@ var processCmd = &cobra.Command{
 		}
 
 		// Create Valkey client
-		// TODO
+		valkeyClient, stopValkeyClient, err := factory.CreateValkeyClient(ctx, conf.Valkey)
+		if err != nil {
+			logger.Error(err, "failed to create valkey client")
+
+			return
+		}
 
 		// Create Main Processing
-		mainProcessing := processing.NewMain(s3Client)
+		mainProcessing := processing.NewMain(s3Client, valkeyClient)
 
 		decoratedProcessing, err := factory.DecorateProcessing(mainProcessing, registry)
 		if err != nil {
@@ -147,6 +152,15 @@ var processCmd = &cobra.Command{
 				err := stopMetricServer(stopContext)
 				if err != nil {
 					return fmt.Errorf("failed to gracefully close metrics server: %w", err)
+				}
+
+				return nil
+			})
+
+			group.Go(func() error {
+				err := stopValkeyClient(stopContext)
+				if err != nil {
+					return fmt.Errorf("failed to gracefully close valkey client: %w", err)
 				}
 
 				return nil

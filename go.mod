@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.28.5
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.46
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.69.0
+	github.com/aws/smithy-go v1.22.1
 	github.com/bombsimon/logrusr/v4 v4.1.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-logr/logr v1.4.2
@@ -21,6 +22,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
+	github.com/valkey-io/valkey-go v1.0.51
 	github.com/vladimirvivien/gexe v0.3.0
 	go.uber.org/automaxprocs v1.6.0
 	go.uber.org/mock v0.5.0
@@ -42,7 +44,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.1 // indirect
-	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cilium/ebpf v0.9.1 // indirect
@@ -88,7 +89,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
