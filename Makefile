@@ -29,7 +29,7 @@ BUILD_DIR := $(CURDIR)/build
 ## High level targets
 ######################
 
-.PHONY: help format build generate check test local
+.PHONY: help format build generate check test logs local
 
 help:     help.all
 format:   format.imports format.code
@@ -37,6 +37,7 @@ build:    build.docker
 generate: generate.mocks
 check:    check.licenses check.imports check.fmt check.lint check.mocks
 test:     test.e2e
+logs:     logs.kube
 local:    local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
 
 
@@ -157,6 +158,32 @@ test.e2e: build.docker local.import
 ## test.unit: Run unit tests
 test.unit:
 	@go test ./pkg/... ./cmd/... ./internal/...
+
+
+#######
+## Logs
+########
+
+.PHONY: logs.kube
+
+ANYTHING_BETWEEN_QUOTES=\"\([^\"]*\)\"
+
+define COLORIZE
+sed -u -e "\
+s/caller=$(ANYTHING_BETWEEN_QUOTES)/caller=\"$(COLOR_BLUE)\1$(RESET_FORMAT)\"/g; \
+s/error=$(ANYTHING_BETWEEN_QUOTES)/error=\"$(COLOR_RED)\1$(RESET_FORMAT)\"/g;    \
+s/msg=$(ANYTHING_BETWEEN_QUOTES)/msg=\"$(COLOR_YELLOW)\1$(RESET_FORMAT)\"/g;     \
+s/level=error/level=$(COLOR_RED)error$(RESET_FORMAT)/g;                          \
+s/level=info/level=$(COLOR_GREEN)info$(RESET_FORMAT)/g;                          \
+s/level=debug/level=$(COLOR_GREEN)info$(RESET_FORMAT)/g;                         \
+s/level=trace/level=$(COLOR_GREEN)info$(RESET_FORMAT)/g;                         \
+s/level=unknown/level=$(COLOR_GREEN)info$(RESET_FORMAT)/g                        \
+"
+endef
+
+## logs.kube: Display processing log with color and unify level
+logs.kube:
+	@kubectl logs -f deployment/ccx-exporter | $(COLORIZE)
 
 
 ########
