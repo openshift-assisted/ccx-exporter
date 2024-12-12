@@ -59,7 +59,7 @@ func CreateTestConfig(test string) TestConfig {
 		DeploymentName: fmt.Sprintf("processing-%s", name),
 		KafkaTopic:     name,
 		ValkeyName:     fmt.Sprintf("valkey-%s", name),
-		ValkeyURL:      fmt.Sprintf("valkey-%s-0.valkey-%s", name, name),
+		ValkeyURL:      fmt.Sprintf("valkey-%s-0.valkey-%s-headless:6379", name, name),
 		OutputS3Bucket: fmt.Sprintf("%s-result", name),
 		DLQS3Bucket:    fmt.Sprintf("%s-dlq", name),
 	}
@@ -119,12 +119,7 @@ func CreateTestContext(conf TestConfig) (TestContext, error) {
 // Generic func
 
 func (tc TestContext) DeployAll(ctx context.Context) error {
-	err := tc.DeployProcessing(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to deploy processing: %w", err)
-	}
-
-	err = tc.DeployValkey(ctx)
+	err := tc.DeployValkey(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to deploy valkey: %w", err)
 	}
@@ -132,6 +127,11 @@ func (tc TestContext) DeployAll(ctx context.Context) error {
 	err = tc.CreateS3Buckets(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create buckets: %w", err)
+	}
+
+	err = tc.DeployProcessing(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to deploy processing: %w", err)
 	}
 
 	return nil
