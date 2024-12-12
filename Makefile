@@ -93,10 +93,10 @@ build.local: build.prepare
 		-mod readonly     \
 		-tags=viper_bind_struct \
 		-ldflags "-s -w -extldflags -static \
-		  -X github.com/prometheus/common/version.Revision=$(GIT_COMMIT)                    \
-		  -X github.com/prometheus/common/version.Branch=$(shell git branch --show-current) \
-		  -X 'github.com/prometheus/common/version.BuildUser=$(shell whoami)'               \
-		  -X 'github.com/prometheus/common/version.BuildDate=$(shell date)'                 \
+		  -X github.com/openshift-assisted/ccx-exporter/internal/version.Revision=$(GIT_COMMIT)                    \
+		  -X github.com/openshift-assisted/ccx-exporter/internal/version.Branch=$(shell git branch --show-current) \
+		  -X 'github.com/prometheus/common/version.BuildUser=$(shell whoami)' \
+		  -X 'github.com/prometheus/common/version.BuildDate=$(shell date)'   \
 		" \
 		-o $(BUILD_DIR)/ccx-exporter \
 		$(CURDIR)/cmd/ccx-exporter/main.go

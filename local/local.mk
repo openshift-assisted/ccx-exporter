@@ -92,7 +92,7 @@ local.processing: local.context
 		-p VALKEY_URL=$(VALKEY_URL) \
 		-p KAFKA_TOPIC=$(KAFKA_TOPIC) \
 		-p S3_USE_PATH_STYLE=true \
-		-p S3_BASE_ENDPOINT=http://localstack:31566 \
+		-p S3_BASE_ENDPOINT=http://localstack:4566 \
 		-p S3_BUCKET=$(S3_BUCKET) \
 		-p DQL_S3_BUCKET=$(DQL_S3_BUCKET) \
 	| oc apply -n $(NAMESPACE) -f -

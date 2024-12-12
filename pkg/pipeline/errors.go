@@ -3,6 +3,8 @@ package pipeline
 import (
 	"errors"
 	"fmt"
+
+	"github.com/IBM/sarama"
 )
 
 // ErrProcessingError
@@ -10,6 +12,7 @@ import (
 type ErrProcessingError struct {
 	error
 	Category         string
+	Event            *sarama.ConsumerMessage
 	AdditionalInputs []Input
 }
 
@@ -45,9 +48,5 @@ func NewErrRetryableError(err error) error {
 }
 
 func NewRetryableErrProcessingError(err error, category string, additionalInputs []Input) ErrProcessingError {
-	return ErrProcessingError{
-		error:            NewErrRetryableError(err),
-		Category:         category,
-		AdditionalInputs: additionalInputs,
-	}
+	return NewErrProcessingError(NewErrRetryableError(err), category, additionalInputs)
 }

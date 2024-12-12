@@ -7,14 +7,16 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/version"
+	promversion "github.com/prometheus/common/version"
 	"github.com/spf13/cobra"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
+	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/processingerror"
 	"github.com/openshift-assisted/ccx-exporter/internal/factory"
 	"github.com/openshift-assisted/ccx-exporter/internal/log"
 	"github.com/openshift-assisted/ccx-exporter/internal/processing"
+	"github.com/openshift-assisted/ccx-exporter/internal/version"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
 
@@ -42,8 +44,9 @@ var processCmd = &cobra.Command{
 
 		// Dump generic information
 		logger.Info("Starting ccx exporter",
-			"version", version.Info(),
-			"buildContext", version.BuildContext(),
+			"revision", version.Revision,
+			"branch", version.Branch,
+			"buildContext", promversion.BuildContext(),
 		)
 		logger.Info("Using config", "config", fmt.Sprintf("%+v", conf))
 
@@ -136,6 +139,9 @@ var processCmd = &cobra.Command{
 			valkeyClient.Close()
 		}()
 
+		// Create S3 repo for processing error
+		processingErrorWriter := processingerror.NewS3Writer(dlqS3Client, conf.DeadLetterQueue.Bucket, conf.DeadLetterQueue.KeyPrefix)
+
 		// Create Main Processing
 		mainProcessing := processing.NewMain(s3Client, valkeyClient)
 
@@ -147,7 +153,7 @@ var processCmd = &cobra.Command{
 		}
 
 		// Create Error Processing
-		errorProcessing := processing.NewMainError(dlqS3Client)
+		errorProcessing := processing.NewMainError(processingErrorWriter)
 
 		decoratedErrorProcessing, err := factory.DecorateErrorProcessing(errorProcessing, registry)
 		if err != nil {

@@ -88,7 +88,7 @@ func (h JSONHandler[Payload]) processError(ctx context.Context, msg *sarama.Cons
 
 	h.logError(pipelineError, "Processing failed")
 
-	processingError := createProcessingError(pipelineError)
+	processingError := createProcessingError(pipelineError, msg)
 
 	err = h.errorProcessing.Process(ctx, processingError)
 	if err != nil {
@@ -141,11 +141,13 @@ func (h JSONHandler[Payload]) logError(err error, msg string, keysAndValues ...a
 	h.logger.Error(err, msg, keysAndValues...)
 }
 
-func createProcessingError(err error) ErrProcessingError {
+func createProcessingError(err error, msg *sarama.ConsumerMessage) ErrProcessingError {
 	ret := ErrProcessingError{}
-	if errors.As(err, &ret) {
-		return ret
+	if !errors.As(err, &ret) {
+		ret = NewErrProcessingError(err, UnknownCategory, nil)
 	}
 
-	return NewErrProcessingError(err, UnknownCategory, nil)
+	ret.Event = msg
+
+	return ret
 }

@@ -3,21 +3,28 @@ package processing
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-
+	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
 
 type MainError struct {
-	s3Client *s3.Client
+	pErrRepo repo.ProcessingErrorWriter
 }
 
-func NewMainError(s3Client *s3.Client) MainError {
+func NewMainError(pErrRepo repo.ProcessingErrorWriter) MainError {
 	return MainError{
-		s3Client: s3Client,
+		pErrRepo: pErrRepo,
 	}
 }
 
 func (m MainError) Process(ctx context.Context, pErr pipeline.ErrProcessingError) error {
-	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
+	err := m.pErrRepo.WriteProcessingError(ctx, pErr)
+	if err != nil {
+		switch {
+		default:
+			return pipeline.NewErrProcessingError(err, "generic", nil)
+		}
+	}
+
+	return nil
 }

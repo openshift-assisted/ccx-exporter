@@ -30,6 +30,7 @@ const (
 
 type S3 struct {
 	Bucket       string
+	KeyPrefix    string
 	BaseEndpoint string
 	Region       string
 	UsePathStyle bool
