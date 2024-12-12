@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/valkey-io/valkey-go"
+
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
-	"github.com/valkey-io/valkey-go"
 )
 
 func CreateValkeyClient(ctx context.Context, conf config.Valkey) (valkey.Client, common.CloseFunc, error) {

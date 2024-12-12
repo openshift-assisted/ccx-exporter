@@ -39,13 +39,19 @@ func (h JSONHandler[Payload]) ConsumeClaim(session sarama.ConsumerGroupSession, 
 	)
 
 	for msg := range claim.Messages() {
-		h.logInfo(3, "Receiving message")
+		// If a re-balancing occurred, context will be canceled
+		// Could also be a termination signal or anything
+		if ctx.Err() != nil {
+			break
+		}
 
 		if msg == nil {
 			h.logInfo(1, "Nil message")
 
 			continue
 		}
+
+		h.logInfo(3, "Processing message", "topic", msg.Topic, "partition", msg.Partition, "offset", msg.Offset)
 
 		payload := new(Payload)
 
@@ -70,13 +76,21 @@ func (h JSONHandler[Payload]) ConsumeClaim(session sarama.ConsumerGroupSession, 
 }
 
 func (h JSONHandler[Payload]) processError(ctx context.Context, msg *sarama.ConsumerMessage, pipelineError error, session sarama.ConsumerGroupSession) {
+	// If context has been cancelled, don't commit offset. Message will be reprocessed with a valid context
+	err := ctx.Err()
+	if err != nil {
+		h.logInfo(1, "Not processing error, context has been cancelled")
+
+		return
+	}
+
 	defer session.MarkMessage(msg, "")
 
 	h.logError(pipelineError, "Processing failed")
 
 	processingError := createProcessingError(pipelineError)
 
-	err := h.errorProcessing.Process(ctx, processingError)
+	err = h.errorProcessing.Process(ctx, processingError)
 	if err != nil {
 		h.logError(err, "Error pipeline failed")
 
@@ -85,13 +99,17 @@ func (h JSONHandler[Payload]) processError(ctx context.Context, msg *sarama.Cons
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim.
-func (h JSONHandler[Payload]) Setup(sarama.ConsumerGroupSession) error {
+func (h JSONHandler[Payload]) Setup(session sarama.ConsumerGroupSession) error {
+	h.logInfo(0, "Setup to consume", "claims", session.Claims())
+
 	return nil
 }
 
 // Cleanup is run at the end of a session, once all ConsumeClaim goroutines have exited
 // but before the offsets are committed for the very last time.
-func (h JSONHandler[Payload]) Cleanup(sarama.ConsumerGroupSession) error {
+func (h JSONHandler[Payload]) Cleanup(session sarama.ConsumerGroupSession) error {
+	h.logInfo(0, "Cleanup after consuming", "claims", session.Claims())
+
 	return nil
 }
 

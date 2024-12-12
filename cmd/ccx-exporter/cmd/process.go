@@ -54,7 +54,8 @@ var processCmd = &cobra.Command{
 
 		// Create main context
 		// Listen to sigterm and interrupt signals
-		ctx := common.SetupSignalHandler(context.Background())
+		rootCtx := context.Background()
+		ctx := common.SetupSignalHandler(rootCtx)
 
 		// Set max procs based on cpu limits
 		err := common.SetMaxProcs()
@@ -129,13 +130,11 @@ var processCmd = &cobra.Command{
 		}
 
 		// GracefulShutdown
-		go func() {
-			<-ctx.Done()
-
+		defer func() {
 			logger.V(2).Info("Starting shutdown")
 
-			stopContext, cancel := context.WithTimeout(context.Background(), conf.GracefulDuration)
-			defer cancel()
+			stopContext, stopCancel := context.WithTimeout(rootCtx, conf.GracefulDuration)
+			defer stopCancel()
 
 			group, _ := errgroup.WithContext(stopContext)
 
@@ -170,15 +169,18 @@ var processCmd = &cobra.Command{
 			if err != nil {
 				logger.Error(err, "Graceful shutdown failed")
 			}
+
+			logger.V(2).Info("Graceful shutdown complete")
 		}()
 
 		// Create Runner & Start processing
 		topics := strings.Split(conf.Kafka.Consumer.Topic, ",")
 
 		runner := pipeline.NewRunner(kc, topics, decoratedProcessing, decoratedErrorProcessing).WithLogger(logger)
+
 		logger.V(2).Info("Start Processing")
 
-		err = runner.Start(ctx)
+		err = runner.Run(ctx)
 		if err != nil {
 			logger.Error(err, "runner stopped unexpectedly")
 		}

@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/IBM/sarama"
@@ -34,7 +35,7 @@ func (r Runner[Payload]) WithLogger(logger logr.Logger) Runner[Payload] {
 	return r
 }
 
-func (r Runner[Payload]) Start(ctx context.Context) error {
+func (r Runner[Payload]) Run(ctx context.Context) error {
 	go func() {
 		for err := range r.consumer.Errors() {
 			r.logError(err, "kafka consumer error")
@@ -44,9 +45,16 @@ func (r Runner[Payload]) Start(ctx context.Context) error {
 	for {
 		err := r.consumer.Consume(ctx, r.topics, r.handler)
 		if err != nil {
-			r.logError(err, "Consumer failed")
+			switch {
+			case errors.Is(err, sarama.ErrClosedConsumerGroup):
+				r.logInfo(2, "Consumer group stopped")
 
-			return fmt.Errorf("consumer failed: %w", err)
+				return nil
+			default:
+				r.logError(err, "Consumer failed")
+
+				return fmt.Errorf("consumer failed: %w", err)
+			}
 		}
 
 		// If context is cancelled, no need to keep looping
@@ -54,7 +62,7 @@ func (r Runner[Payload]) Start(ctx context.Context) error {
 		if err != nil {
 			r.logInfo(0, "Context expired")
 
-			return err
+			return nil
 		}
 	}
 }
