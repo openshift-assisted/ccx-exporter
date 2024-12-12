@@ -1,7 +1,6 @@
 package factory
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"os"
@@ -9,11 +8,10 @@ import (
 
 	"github.com/IBM/sarama"
 
-	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
 )
 
-func CreateKafkaConsumer(kafkaConfig config.Kafka) (sarama.ConsumerGroup, common.CloseFunc, error) {
+func CreateKafkaConsumer(kafkaConfig config.Kafka) (sarama.ConsumerGroup, error) {
 	conf := sarama.NewConfig()
 
 	// mandatory configuration
@@ -29,7 +27,7 @@ func CreateKafkaConsumer(kafkaConfig config.Kafka) (sarama.ConsumerGroup, common
 	// kafka version
 	version, err := sarama.ParseKafkaVersion(kafkaConfig.Broker.Version)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse kafka version: %w", err)
+		return nil, fmt.Errorf("failed to parse kafka version: %w", err)
 	}
 
 	conf.Version = version
@@ -40,14 +38,10 @@ func CreateKafkaConsumer(kafkaConfig config.Kafka) (sarama.ConsumerGroup, common
 	// kafka consumer group
 	ret, err := sarama.NewConsumerGroup(urls, kafkaConfig.Consumer.Group, conf)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create kafka consumer group: %w", err)
+		return nil, fmt.Errorf("failed to create kafka consumer group: %w", err)
 	}
 
-	shutdown := func(context.Context) error {
-		return ret.Close()
-	}
-
-	return ret, shutdown, nil
+	return ret, nil
 }
 
 func computeClientID(groupID string) string {

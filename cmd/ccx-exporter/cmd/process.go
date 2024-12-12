@@ -3,12 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
 	"github.com/spf13/cobra"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
@@ -73,18 +73,41 @@ var processCmd = &cobra.Command{
 			return
 		}
 
-		// Start prometheus server
+		// Create & start prometheus server
 		registry := prometheus.NewRegistry()
+		promserver := factory.CreatePrometheusServer(conf.Metrics, registry)
 
-		stopMetricServer := common.StartPrometheusServer(conf.Metrics, registry)
+		go func() {
+			err := promserver.ListenAndServe()
+			if err != nil && err != http.ErrServerClosed {
+				logger.Error(err, "Prometheus server stopped")
+			}
+		}()
+
+		defer func() {
+			ctx, cancel := context.WithTimeout(rootCtx, conf.GracefulDuration)
+			defer cancel()
+
+			err := promserver.Shutdown(ctx)
+			if err != nil {
+				logger.Error(err, "failed to close prometheus server")
+			}
+		}()
 
 		// Create Kafka client
-		kc, stopKafkaConsumer, err := factory.CreateKafkaConsumer(conf.Kafka)
+		kc, err := factory.CreateKafkaConsumer(conf.Kafka)
 		if err != nil {
 			logger.Error(err, "failed to create kafka consumer group")
 
 			return
 		}
+
+		defer func() {
+			err := kc.Close()
+			if err != nil {
+				logger.Error(err, "failed to close kafka consumer")
+			}
+		}()
 
 		// Create S3 clients
 		s3Client, err := factory.CreateS3Client(ctx, conf.S3)
@@ -102,12 +125,16 @@ var processCmd = &cobra.Command{
 		}
 
 		// Create Valkey client
-		valkeyClient, stopValkeyClient, err := factory.CreateValkeyClient(ctx, conf.Valkey)
+		valkeyClient, err := factory.CreateValkeyClient(ctx, conf.Valkey)
 		if err != nil {
 			logger.Error(err, "failed to create valkey client")
 
 			return
 		}
+
+		defer func() {
+			valkeyClient.Close()
+		}()
 
 		// Create Main Processing
 		mainProcessing := processing.NewMain(s3Client, valkeyClient)
@@ -128,50 +155,6 @@ var processCmd = &cobra.Command{
 
 			return
 		}
-
-		// GracefulShutdown
-		defer func() {
-			logger.V(2).Info("Starting shutdown")
-
-			stopContext, stopCancel := context.WithTimeout(rootCtx, conf.GracefulDuration)
-			defer stopCancel()
-
-			group, _ := errgroup.WithContext(stopContext)
-
-			group.Go(func() error {
-				err := stopKafkaConsumer(stopContext)
-				if err != nil {
-					return fmt.Errorf("failed to gracefully close kafka consumer: %w", err)
-				}
-
-				return nil
-			})
-
-			group.Go(func() error {
-				err := stopMetricServer(stopContext)
-				if err != nil {
-					return fmt.Errorf("failed to gracefully close metrics server: %w", err)
-				}
-
-				return nil
-			})
-
-			group.Go(func() error {
-				err := stopValkeyClient(stopContext)
-				if err != nil {
-					return fmt.Errorf("failed to gracefully close valkey client: %w", err)
-				}
-
-				return nil
-			})
-
-			err := group.Wait()
-			if err != nil {
-				logger.Error(err, "Graceful shutdown failed")
-			}
-
-			logger.V(2).Info("Graceful shutdown complete")
-		}()
 
 		// Create Runner & Start processing
 		topics := strings.Split(conf.Kafka.Consumer.Topic, ",")
