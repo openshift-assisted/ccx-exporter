@@ -153,7 +153,7 @@ check.mocks:
 
 ## test.e2e: Run e2e test
 test.e2e: build.docker local.import
-	@go test ./test/e2e/...
+	@go test ./test/e2e/... -v -kubeconfig $(LOCAL_KUBE_CONFIG)
 
 ## test.unit: Run unit tests
 test.unit:

@@ -3,7 +3,9 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"io"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
 
@@ -11,6 +13,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/portforward"
+	"k8s.io/client-go/transport/spdy"
 )
 
 const (
@@ -37,6 +46,9 @@ type TestContext struct {
 
 	kafkaProducer sarama.SyncProducer
 	kafkaAdmin    sarama.ClusterAdmin
+
+	kubeConfig *rest.Config
+	kubeClient *kubernetes.Clientset
 }
 
 var random *rand.Rand
@@ -65,7 +77,7 @@ func CreateTestConfig(test string) TestConfig {
 	}
 }
 
-func CreateTestContext(conf TestConfig) (TestContext, error) {
+func CreateTestContext(conf TestConfig, kubeConfigPath string) (TestContext, error) {
 	ret := TestContext{
 		Config: conf,
 	}
@@ -112,6 +124,21 @@ func CreateTestContext(conf TestConfig) (TestContext, error) {
 	}
 
 	ret.kafkaAdmin = ka
+
+	// Kube client
+	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	if err != nil {
+		return ret, fmt.Errorf("failed to cerate kube config: %w", err)
+	}
+
+	ret.kubeConfig = kubeConfig
+
+	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		return ret, fmt.Errorf("failed to create kubernetes clientset: %w", err)
+	}
+
+	ret.kubeClient = kubeClient
 
 	return ret, nil
 }
@@ -350,4 +377,116 @@ func (tc TestContext) deleteS3Bucket(_ context.Context, bucket string) error {
 	}
 
 	return nil
+}
+
+// Kube func
+func (tc TestContext) PortForward(ctx context.Context, namespace string, pod string, ports []string) ([]portforward.ForwardedPort, chan struct{}, error) {
+	url := tc.kubeClient.CoreV1().RESTClient().Post().
+		Resource("pods").
+		Namespace(namespace).
+		Name(pod).
+		SubResource("portforward").URL()
+
+	transport, upgrader, err := spdy.RoundTripperFor(tc.kubeConfig)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create round tripper: %w", err)
+	}
+
+	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", url)
+
+	stopChan := make(chan struct{})
+	readyChan := make(chan struct{})
+	errChan := make(chan error)
+
+	pf, err := portforward.New(dialer, ports, stopChan, readyChan, io.Discard, io.Discard)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to port forward into pod: %w", err)
+	}
+
+	go func() {
+		errChan <- pf.ForwardPorts()
+	}()
+
+	select {
+	case err = <-errChan:
+		return nil, nil, fmt.Errorf("failed to run port forward: %w", err)
+	case <-readyChan:
+		break
+	}
+
+	ret, err := pf.GetPorts()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get used ports: %w", err)
+	}
+
+	return ret, stopChan, nil
+}
+
+func (tc TestContext) ListProcessingPod(ctx context.Context) (*corev1.PodList, error) {
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"app.kubernetes.io/name": tc.Config.DeploymentName,
+		},
+	}
+
+	label, err := metav1.LabelSelectorAsSelector(&labelSelector)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create label selector: %w", err)
+	}
+
+	ret, err := tc.kubeClient.CoreV1().Pods("ccx-exporter").List(ctx, metav1.ListOptions{
+		LabelSelector: label.String(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list pod: %w", err)
+	}
+
+	return ret, nil
+}
+
+func (tc TestContext) PortForwardProcessingMetrics(ctx context.Context) (uint16, chan struct{}, error) {
+	podList, err := tc.ListProcessingPod(ctx)
+	if err != nil {
+		return 0, nil, fmt.Errorf("failed to list processing pods: %w", err)
+	}
+
+	if len(podList.Items) == 0 {
+		return 0, nil, fmt.Errorf("no pods found")
+	}
+
+	ports, cancel, err := tc.PortForward(ctx, "ccx-exporter", podList.Items[0].Name, []string{":7777"})
+	if err != nil {
+		return 0, nil, fmt.Errorf("fail to port forward: %w", err)
+	}
+
+	if len(ports) == 0 {
+		close(cancel)
+
+		return 0, nil, fmt.Errorf("0 returned port")
+	}
+
+	return ports[0].Local, cancel, nil
+}
+
+// HTTP func
+
+func (tc TestContext) HttpGet(ctx context.Context, url string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("request failed: %w", err)
+	}
+
+	defer resp.Body.Close()
+
+	ret, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
+	return string(ret), nil
 }
