@@ -23,9 +23,7 @@ const (
 	keyTemplate = "<prefix>/<year>/<month>/<day>/<topic>/<partition>-<offset>.json"
 )
 
-var (
-	ErrNilEvent = errors.New("nil event")
-)
+var ErrNilEvent = errors.New("nil event")
 
 type S3Writer struct {
 	s3client *s3.Client

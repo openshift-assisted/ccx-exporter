@@ -335,10 +335,18 @@ func (tc TestContext) createS3Bucket(ctx context.Context, bucket string) error {
 	return nil
 }
 
-func (tc TestContext) deleteS3Bucket(ctx context.Context, bucket string) error {
-	_, err := tc.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{Bucket: &bucket})
+func (tc TestContext) deleteS3Bucket(_ context.Context, bucket string) error {
+	// Unfortunately the s3 client can't be used because:
+	// - the bucket needs to be empty to be deleted
+	// - DeleteObject(s) doesn't support PathStyle
+	// - PathStyle is mandatory with localstack + kind
+
+	err := runCommand(
+		fmt.Sprintf("aws --endpoint-url=%s s3 rb s3://%s --force", localstackURL, bucket),
+		[]string{"AWS_ACCESS_KEY_ID=set", "AWS_SECRET_ACCESS_KEY=set"},
+	)
 	if err != nil {
-		return fmt.Errorf("failed to delete bucket %s: %w", bucket, err)
+		return fmt.Errorf("failed to run command: %w", err)
 	}
 
 	return nil
