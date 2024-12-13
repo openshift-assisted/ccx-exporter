@@ -115,7 +115,7 @@ build.docker:
 ## generate.mocks: Generate mocks with mockgen
 generate.mocks:
 	@find $(FILES_LIST) -type d -name mock -exec rm -rv {} +
-	@go generate ./pkg/...
+	@go generate ./pkg/... ./internal/...
 
 
 ################

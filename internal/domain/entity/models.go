@@ -5,3 +5,5 @@ type Event struct {
 	Payload  interface{}            `json:"payload"`
 	Metadata map[string]interface{} `json:"metadata"`
 }
+
+type ProjectedEvent struct{}

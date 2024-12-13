@@ -12,7 +12,9 @@ import (
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
+	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/event"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/processingerror"
+	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/projectedevent"
 	"github.com/openshift-assisted/ccx-exporter/internal/factory"
 	"github.com/openshift-assisted/ccx-exporter/internal/log"
 	"github.com/openshift-assisted/ccx-exporter/internal/processing"
@@ -142,8 +144,14 @@ var processCmd = &cobra.Command{
 		// Create S3 repo for processing error
 		processingErrorWriter := processingerror.NewS3Writer(dlqS3Client, conf.DeadLetterQueue.Bucket, conf.DeadLetterQueue.KeyPrefix)
 
+		// Create S3 repo for projected event
+		projectedEventWriter := projectedevent.NewS3Writer(s3Client, conf.S3.Bucket, conf.S3.KeyPrefix)
+
+		// Create valkey repo for event
+		valkeyRepo := event.NewValkeyRepo(valkeyClient)
+
 		// Create Main Processing
-		mainProcessing := processing.NewMain(s3Client, valkeyClient)
+		mainProcessing := processing.NewMain(valkeyRepo, projectedEventWriter)
 
 		decoratedProcessing, err := factory.DecorateProcessing(mainProcessing, registry)
 		if err != nil {

@@ -4,27 +4,62 @@ import (
 	"context"
 	"errors"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/valkey-io/valkey-go"
-
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
+	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
 
-var errNotImplemented = errors.New("not implemented")
+var (
+	errUnknownEvent   = errors.New("unknown event name")
+	errNotImplemented = errors.New("not implemented")
+)
+
+const (
+	eventNameEvent         = "Event"
+	eventNameClusterState  = "ClusterState"
+	eventNameHostState     = "HostState"
+	eventNameInfraEnvState = "InfraEnv"
+)
 
 type Main struct {
-	s3Client     *s3.Client
-	valkeyClient valkey.Client
+	eventRepo       repo.Event
+	projectedWriter repo.ProjectedEventWriter
 }
 
-func NewMain(s3Client *s3.Client, valkeyClient valkey.Client) Main {
+func NewMain(eventRepo repo.Event, projectedWriter repo.ProjectedEventWriter) Main {
 	return Main{
-		s3Client:     s3Client,
-		valkeyClient: valkeyClient,
+		eventRepo:       eventRepo,
+		projectedWriter: projectedWriter,
 	}
 }
 
 func (m Main) Process(ctx context.Context, event entity.Event) error {
+	switch event.Name {
+	case eventNameEvent:
+		return m.processClusterEvent(ctx, event)
+	case eventNameClusterState:
+		return m.processClusterState(ctx, event)
+	case eventNameHostState:
+		return m.processHostState(ctx, event)
+	case eventNameInfraEnvState:
+		return m.processInfraEnv(ctx, event)
+	default:
+		return pipeline.NewErrProcessingError(errUnknownEvent, "unknown_name", nil)
+	}
+}
+
+func (m Main) processClusterEvent(ctx context.Context, event entity.Event) error {
+	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
+}
+
+func (m Main) processClusterState(ctx context.Context, event entity.Event) error {
+	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
+}
+
+func (m Main) processHostState(ctx context.Context, event entity.Event) error {
+	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
+}
+
+func (m Main) processInfraEnv(ctx context.Context, event entity.Event) error {
 	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
 }
