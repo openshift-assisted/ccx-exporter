@@ -18,3 +18,13 @@ type: Opaque
 data:
   accesskeyid: dXNlbGVzcw== # useless
   secretaccesskey: dXNlbGVzcw== # useless
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-secret
+  namespace: ccx-exporter
+type: Opaque
+data:
+  user: dXNlbGVzcw== # useless
+  password: dXNlbGVzcw== # useless

@@ -71,6 +71,17 @@ parameters:
   value: kraft-0.kraft:9092
 - name: KAFKA_TOPIC
   value: assisted-service-events
+- name: KAFKA_USE_SCRAM_AUTH
+  value: "true"
+- name: KAFKA_USER_SECRETNAME
+  value: kafka-secret
+- name: KAFKA_USER_SECRETKEY
+  value: user
+- name: KAFKA_PASSWORD_SECRETNAME
+  value: kafka-secret
+- name: KAFKA_PASSWORD_SECRETKEY
+  value: password
+
 
 objects:
 - apiVersion: v1
@@ -90,6 +101,8 @@ objects:
         broker:
           urls: ${KAFKA_BROKERS}
           version: "3.6.0"
+          creds:
+            useSCRAMSHA512Auth: ${KAFKA_USE_SCRAM_AUTH}
         consumer:
           topic: ${KAFKA_TOPIC}
           group: ccx-exporter
@@ -122,28 +135,38 @@ objects:
           - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_ACCESSKEYID
             valueFrom:
               secretKeyRef:
-                key: ${DLQ_AWS_ACCESS_KEY_ID_SECRETKEY}
                 name: ${DLQ_AWS_ACCESS_KEY_ID_SECRETNAME}
+                key: ${DLQ_AWS_ACCESS_KEY_ID_SECRETKEY}
           - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_SECRETACCESSKEY
             valueFrom:
               secretKeyRef:
-                key: ${DLQ_AWS_SECRET_ACCESS_KEY_SECRETKEY}
                 name: ${DLQ_AWS_SECRET_ACCESS_KEY_SECRETNAME}
+                key: ${DLQ_AWS_SECRET_ACCESS_KEY_SECRETKEY}
           - name: CCXEXPORTER_S3_CREDS_ACCESSKEYID
             valueFrom:
               secretKeyRef:
-                key: ${AWS_ACCESS_KEY_ID_SECRETKEY}
                 name: ${AWS_ACCESS_KEY_ID_SECRETNAME}
+                key: ${AWS_ACCESS_KEY_ID_SECRETKEY}
           - name: CCXEXPORTER_S3_CREDS_SECRETACCESSKEY
             valueFrom:
               secretKeyRef:
-                key: ${AWS_SECRET_ACCESS_KEY_SECRETKEY}
                 name: ${AWS_SECRET_ACCESS_KEY_SECRETNAME}
+                key: ${AWS_SECRET_ACCESS_KEY_SECRETKEY}
           - name: CCXEXPORTER_VALKEY_CREDS_PASSWORD
             valueFrom:
               secretKeyRef:
-                key: ${VALKEY_PASSWORD_SECRETKEY}
                 name: ${VALKEY_PASSWORD_SECRETNAME}
+                key: ${VALKEY_PASSWORD_SECRETKEY}
+          - name: CCXEXPORTER_KAFKA_BROKER_CREDS_USER
+            valueFrom:
+              secretKeyRef:
+                name: ${KAFKA_USER_SECRETNAME}
+                key: ${KAFKA_USER_SECRETKEY}
+          - name: CCXEXPORTER_KAFKA_BROKER_CREDS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ${KAFKA_PASSWORD_SECRETNAME}
+                key: ${KAFKA_PASSWORD_SECRETKEY}
           image: ${IMAGE_NAME}:${IMAGE_TAG}
           imagePullPolicy: ${IMAGE_PULL_POLICY}
           name: processing

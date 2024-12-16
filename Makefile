@@ -149,11 +149,14 @@ check.mocks:
 ## Test
 ########
 
-.PHONY: test.e2e test.unit
+.PHONY: test.e2e.fast test.e2e test.unit
+
+## test.e2e.fast: Run e2e test without rebuilding and reimporting the processing image
+test.e2e.fast:
+	@go test ./test/e2e/... -v -kubeconfig $(LOCAL_KUBE_CONFIG)
 
 ## test.e2e: Run e2e test
-test.e2e: build.docker local.import
-	@go test ./test/e2e/... -v -kubeconfig $(LOCAL_KUBE_CONFIG)
+test.e2e: build.docker local.import test.e2e.fast
 
 ## test.unit: Run unit tests
 test.unit:

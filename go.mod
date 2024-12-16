@@ -24,9 +24,12 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/valkey-io/valkey-go v1.0.51
 	github.com/vladimirvivien/gexe v0.3.0
+	github.com/xdg-go/scram v1.1.2
 	go.uber.org/automaxprocs v1.6.0
 	go.uber.org/mock v0.5.0
 	golang.org/x/sync v0.10.0
+	k8s.io/api v0.31.4
+	k8s.io/apimachinery v0.31.4
 	k8s.io/client-go v0.31.4
 )
 
@@ -108,6 +111,8 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
+	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
+	github.com/xdg-go/stringprep v1.0.4 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
@@ -124,8 +129,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.31.4 // indirect
-	k8s.io/apimachinery v0.31.4 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect

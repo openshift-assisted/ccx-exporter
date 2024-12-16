@@ -61,10 +61,27 @@ type KafkaBroker struct {
 	Creds   KafkaCreds
 }
 
-type KafkaCreds struct{}
+type KafkaCreds struct {
+	User               string
+	Password           string
+	UseSCRAMSHA512Auth bool
+}
 
 func (c KafkaCreds) String() string {
-	return ""
+	if !c.UseSCRAMSHA512Auth {
+		return "not using SCRAM auth"
+	}
+
+	switch {
+	case c.User != "" && c.Password != "":
+		return "creds are set"
+	case c.User != "":
+		return "only user is set"
+	case c.Password != "":
+		return "only password is set"
+	default:
+		return "no creds"
+	}
 }
 
 type KafkaConsumer struct {

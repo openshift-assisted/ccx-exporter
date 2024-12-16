@@ -95,6 +95,7 @@ local.processing: local.context
 		-p S3_BASE_ENDPOINT=http://localstack:4566 \
 		-p S3_BUCKET=$(S3_BUCKET) \
 		-p DQL_S3_BUCKET=$(DQL_S3_BUCKET) \
+		-p KAFKA_USE_SCRAM_AUTH=false \
 	| oc apply -n $(NAMESPACE) -f -
 	@$(KUBE_WAIT) deployment/$(DEPLOYMENT_NAME)
 
