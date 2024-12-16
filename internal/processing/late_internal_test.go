@@ -9,14 +9,13 @@ import (
 )
 
 func TestComputeDeadline(t *testing.T) {
-
 	type testCase struct {
 		name        string
 		fakeTime    time.Time
 		expectation time.Time
 	}
 
-	for _, c := range []testCase{
+	cases := []testCase{
 		{
 			name:        "Before 2PM",
 			fakeTime:    time.Date(2024, 12, 25, 13, 59, 59, 0, time.UTC),
@@ -28,7 +27,7 @@ func TestComputeDeadline(t *testing.T) {
 			expectation: time.Date(2024, 12, 25, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			name:        "At mightnight",
+			name:        "At midnight",
 			fakeTime:    time.Date(2024, 12, 25, 0, 0, 0, 0, time.UTC),
 			expectation: time.Date(2024, 12, 24, 0, 0, 0, 0, time.UTC),
 		},
@@ -37,7 +36,11 @@ func TestComputeDeadline(t *testing.T) {
 			fakeTime:    time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 			expectation: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC),
 		},
-	} {
+	}
+
+	for i := range cases {
+		c := cases[i]
+
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			assert := assert.New(t)

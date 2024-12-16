@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/jonboulle/clockwork"
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
 	"github.com/openshift-assisted/ccx-exporter/internal/log"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 type CountLateData struct {
