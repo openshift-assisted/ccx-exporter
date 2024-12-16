@@ -7,13 +7,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
+	"github.com/openshift-assisted/ccx-exporter/internal/processing"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
 
 /*
  * DecorateProcessing decorates the processing as follow:
  *
- * panic --> duration --> retry --> main (anonymize + ... + s3)
+ * panic --> count late data --> duration --> retry --> main (anonymize + ... + s3)
  */
 func DecorateProcessing(mainProcessing pipeline.Processing[entity.Event], registry prometheus.Registerer) (pipeline.Processing[entity.Event], error) {
 	ret := mainProcessing
@@ -22,6 +23,11 @@ func DecorateProcessing(mainProcessing pipeline.Processing[entity.Event], regist
 	ret, err := pipeline.NewDurationMetricsDecoratorProcessing(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "main"})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create duration metrics processor: %w", err)
+	}
+
+	ret, err = processing.NewCountLateData(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "main"})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create count late event metrics processor: %w", err)
 	}
 
 	ret = pipeline.NewPanicHandlerProcessing(ret)
