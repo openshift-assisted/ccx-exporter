@@ -3,6 +3,8 @@ package host
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"syscall"
 	"time"
 
 	"github.com/valkey-io/valkey-go"
@@ -107,6 +109,12 @@ func (r ValkeyRepo) GetHostStates(ctx context.Context, clusterID string) ([]enti
 }
 
 func (r ValkeyRepo) isRetryable(err error) bool {
+	// Network error
+	if errors.Is(err, syscall.ECONNREFUSED) {
+		return true
+	}
+
+	// Valkey specfic error
 	vErr, isValkeyError := valkey.IsValkeyErr(err)
 	if !isValkeyError {
 		return false
