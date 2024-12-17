@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo"
@@ -22,18 +23,21 @@ const (
 )
 
 type Main struct {
-	hostRepo        repo.HostState
-	projectedWriter repo.ProjectedEventWriter
+	hostRepo         repo.HostState
+	projectionWriter repo.ProjectionWriter
 }
 
-func NewMain(hostRepo repo.HostState, projectedWriter repo.ProjectedEventWriter) Main {
+func NewMain(hostRepo repo.HostState, projectionWriter repo.ProjectionWriter) Main {
 	return Main{
-		hostRepo:        hostRepo,
-		projectedWriter: projectedWriter,
+		hostRepo:         hostRepo,
+		projectionWriter: projectionWriter,
 	}
 }
 
-func (m Main) Process(ctx context.Context, event entity.Event) error {
+func (m Main) Process(processingCtx context.Context, event entity.Event) error {
+	ctx, cancel := context.WithTimeout(processingCtx, 4*time.Second)
+	defer cancel()
+
 	switch event.Name {
 	case eventNameEvent:
 		return m.processClusterEvent(ctx, event)

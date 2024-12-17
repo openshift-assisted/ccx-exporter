@@ -13,4 +13,8 @@ type HostState struct {
 	Metadata  map[string]interface{}
 }
 
-type ProjectedEvent struct{}
+type (
+	ProjectedClusterEvent map[string]interface{}
+	ProjectedClusterState map[string]interface{}
+	ProjectedInfraEnv     map[string]interface{}
+)

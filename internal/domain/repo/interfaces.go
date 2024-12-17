@@ -30,10 +30,20 @@ type HostState interface {
 	HostStateReader
 }
 
-type ProjectedEventWriter interface {
-	WriteProjectedEvent(ctx context.Context, event entity.ProjectedEvent) error
+type ProjectedClusterEventWriter interface {
+	WriteProjectedClusterEvent(ctx context.Context, event entity.ProjectedClusterEvent) error
 }
 
-type ProjectedEvent interface {
-	ProjectedEventWriter
+type ProjectedClusterStateWriter interface {
+	WriteProjectedClusterState(ctx context.Context, state entity.ProjectedClusterState) error
+}
+
+type ProjectedInfraEnvWriter interface {
+	WriteProjectedInfraEnv(ctx context.Context, infraEnv entity.ProjectedInfraEnv) error
+}
+
+type ProjectionWriter interface {
+	ProjectedClusterEventWriter
+	ProjectedClusterStateWriter
+	ProjectedInfraEnvWriter
 }

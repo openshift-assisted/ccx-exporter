@@ -95,208 +95,312 @@ func (mr *MockProcessingErrorMockRecorder) WriteProcessingError(ctx, pErr any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProcessingError", reflect.TypeOf((*MockProcessingError)(nil).WriteProcessingError), ctx, pErr)
 }
 
-// MockEventWriter is a mock of EventWriter interface.
-type MockEventWriter struct {
+// MockHostStateWriter is a mock of HostStateWriter interface.
+type MockHostStateWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockEventWriterMockRecorder
+	recorder *MockHostStateWriterMockRecorder
 	isgomock struct{}
 }
 
-// MockEventWriterMockRecorder is the mock recorder for MockEventWriter.
-type MockEventWriterMockRecorder struct {
-	mock *MockEventWriter
+// MockHostStateWriterMockRecorder is the mock recorder for MockHostStateWriter.
+type MockHostStateWriterMockRecorder struct {
+	mock *MockHostStateWriter
 }
 
-// NewMockEventWriter creates a new mock instance.
-func NewMockEventWriter(ctrl *gomock.Controller) *MockEventWriter {
-	mock := &MockEventWriter{ctrl: ctrl}
-	mock.recorder = &MockEventWriterMockRecorder{mock}
+// NewMockHostStateWriter creates a new mock instance.
+func NewMockHostStateWriter(ctrl *gomock.Controller) *MockHostStateWriter {
+	mock := &MockHostStateWriter{ctrl: ctrl}
+	mock.recorder = &MockHostStateWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockEventWriter) EXPECT() *MockEventWriterMockRecorder {
+func (m *MockHostStateWriter) EXPECT() *MockHostStateWriterMockRecorder {
 	return m.recorder
 }
 
-// WriteEvent mocks base method.
-func (m *MockEventWriter) WriteEvent(ctx context.Context, event entity.Event) error {
+// WriteHostState mocks base method.
+func (m *MockHostStateWriter) WriteHostState(ctx context.Context, state entity.HostState) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteEvent", ctx, event)
+	ret := m.ctrl.Call(m, "WriteHostState", ctx, state)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// WriteEvent indicates an expected call of WriteEvent.
-func (mr *MockEventWriterMockRecorder) WriteEvent(ctx, event any) *gomock.Call {
+// WriteHostState indicates an expected call of WriteHostState.
+func (mr *MockHostStateWriterMockRecorder) WriteHostState(ctx, state any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteEvent", reflect.TypeOf((*MockEventWriter)(nil).WriteEvent), ctx, event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteHostState", reflect.TypeOf((*MockHostStateWriter)(nil).WriteHostState), ctx, state)
 }
 
-// MockEventReader is a mock of EventReader interface.
-type MockEventReader struct {
+// MockHostStateReader is a mock of HostStateReader interface.
+type MockHostStateReader struct {
 	ctrl     *gomock.Controller
-	recorder *MockEventReaderMockRecorder
+	recorder *MockHostStateReaderMockRecorder
 	isgomock struct{}
 }
 
-// MockEventReaderMockRecorder is the mock recorder for MockEventReader.
-type MockEventReaderMockRecorder struct {
-	mock *MockEventReader
+// MockHostStateReaderMockRecorder is the mock recorder for MockHostStateReader.
+type MockHostStateReaderMockRecorder struct {
+	mock *MockHostStateReader
 }
 
-// NewMockEventReader creates a new mock instance.
-func NewMockEventReader(ctrl *gomock.Controller) *MockEventReader {
-	mock := &MockEventReader{ctrl: ctrl}
-	mock.recorder = &MockEventReaderMockRecorder{mock}
+// NewMockHostStateReader creates a new mock instance.
+func NewMockHostStateReader(ctrl *gomock.Controller) *MockHostStateReader {
+	mock := &MockHostStateReader{ctrl: ctrl}
+	mock.recorder = &MockHostStateReaderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockEventReader) EXPECT() *MockEventReaderMockRecorder {
+func (m *MockHostStateReader) EXPECT() *MockHostStateReaderMockRecorder {
 	return m.recorder
 }
 
-// GetEvent mocks base method.
-func (m *MockEventReader) GetEvent(ctx context.Context, clusterID string) (entity.Event, error) {
+// GetHostStates mocks base method.
+func (m *MockHostStateReader) GetHostStates(ctx context.Context, clusterID string) ([]entity.HostState, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEvent", ctx, clusterID)
-	ret0, _ := ret[0].(entity.Event)
+	ret := m.ctrl.Call(m, "GetHostStates", ctx, clusterID)
+	ret0, _ := ret[0].([]entity.HostState)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetEvent indicates an expected call of GetEvent.
-func (mr *MockEventReaderMockRecorder) GetEvent(ctx, clusterID any) *gomock.Call {
+// GetHostStates indicates an expected call of GetHostStates.
+func (mr *MockHostStateReaderMockRecorder) GetHostStates(ctx, clusterID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvent", reflect.TypeOf((*MockEventReader)(nil).GetEvent), ctx, clusterID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostStates", reflect.TypeOf((*MockHostStateReader)(nil).GetHostStates), ctx, clusterID)
 }
 
-// MockEvent is a mock of Event interface.
-type MockEvent struct {
+// MockHostState is a mock of HostState interface.
+type MockHostState struct {
 	ctrl     *gomock.Controller
-	recorder *MockEventMockRecorder
+	recorder *MockHostStateMockRecorder
 	isgomock struct{}
 }
 
-// MockEventMockRecorder is the mock recorder for MockEvent.
-type MockEventMockRecorder struct {
-	mock *MockEvent
+// MockHostStateMockRecorder is the mock recorder for MockHostState.
+type MockHostStateMockRecorder struct {
+	mock *MockHostState
 }
 
-// NewMockEvent creates a new mock instance.
-func NewMockEvent(ctrl *gomock.Controller) *MockEvent {
-	mock := &MockEvent{ctrl: ctrl}
-	mock.recorder = &MockEventMockRecorder{mock}
+// NewMockHostState creates a new mock instance.
+func NewMockHostState(ctrl *gomock.Controller) *MockHostState {
+	mock := &MockHostState{ctrl: ctrl}
+	mock.recorder = &MockHostStateMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockEvent) EXPECT() *MockEventMockRecorder {
+func (m *MockHostState) EXPECT() *MockHostStateMockRecorder {
 	return m.recorder
 }
 
-// GetEvent mocks base method.
-func (m *MockEvent) GetEvent(ctx context.Context, clusterID string) (entity.Event, error) {
+// GetHostStates mocks base method.
+func (m *MockHostState) GetHostStates(ctx context.Context, clusterID string) ([]entity.HostState, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEvent", ctx, clusterID)
-	ret0, _ := ret[0].(entity.Event)
+	ret := m.ctrl.Call(m, "GetHostStates", ctx, clusterID)
+	ret0, _ := ret[0].([]entity.HostState)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetEvent indicates an expected call of GetEvent.
-func (mr *MockEventMockRecorder) GetEvent(ctx, clusterID any) *gomock.Call {
+// GetHostStates indicates an expected call of GetHostStates.
+func (mr *MockHostStateMockRecorder) GetHostStates(ctx, clusterID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvent", reflect.TypeOf((*MockEvent)(nil).GetEvent), ctx, clusterID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostStates", reflect.TypeOf((*MockHostState)(nil).GetHostStates), ctx, clusterID)
 }
 
-// WriteEvent mocks base method.
-func (m *MockEvent) WriteEvent(ctx context.Context, event entity.Event) error {
+// WriteHostState mocks base method.
+func (m *MockHostState) WriteHostState(ctx context.Context, state entity.HostState) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteEvent", ctx, event)
+	ret := m.ctrl.Call(m, "WriteHostState", ctx, state)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// WriteEvent indicates an expected call of WriteEvent.
-func (mr *MockEventMockRecorder) WriteEvent(ctx, event any) *gomock.Call {
+// WriteHostState indicates an expected call of WriteHostState.
+func (mr *MockHostStateMockRecorder) WriteHostState(ctx, state any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteEvent", reflect.TypeOf((*MockEvent)(nil).WriteEvent), ctx, event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteHostState", reflect.TypeOf((*MockHostState)(nil).WriteHostState), ctx, state)
 }
 
-// MockProjectedEventWriter is a mock of ProjectedEventWriter interface.
-type MockProjectedEventWriter struct {
+// MockProjectedClusterEventWriter is a mock of ProjectedClusterEventWriter interface.
+type MockProjectedClusterEventWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockProjectedEventWriterMockRecorder
+	recorder *MockProjectedClusterEventWriterMockRecorder
 	isgomock struct{}
 }
 
-// MockProjectedEventWriterMockRecorder is the mock recorder for MockProjectedEventWriter.
-type MockProjectedEventWriterMockRecorder struct {
-	mock *MockProjectedEventWriter
+// MockProjectedClusterEventWriterMockRecorder is the mock recorder for MockProjectedClusterEventWriter.
+type MockProjectedClusterEventWriterMockRecorder struct {
+	mock *MockProjectedClusterEventWriter
 }
 
-// NewMockProjectedEventWriter creates a new mock instance.
-func NewMockProjectedEventWriter(ctrl *gomock.Controller) *MockProjectedEventWriter {
-	mock := &MockProjectedEventWriter{ctrl: ctrl}
-	mock.recorder = &MockProjectedEventWriterMockRecorder{mock}
+// NewMockProjectedClusterEventWriter creates a new mock instance.
+func NewMockProjectedClusterEventWriter(ctrl *gomock.Controller) *MockProjectedClusterEventWriter {
+	mock := &MockProjectedClusterEventWriter{ctrl: ctrl}
+	mock.recorder = &MockProjectedClusterEventWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockProjectedEventWriter) EXPECT() *MockProjectedEventWriterMockRecorder {
+func (m *MockProjectedClusterEventWriter) EXPECT() *MockProjectedClusterEventWriterMockRecorder {
 	return m.recorder
 }
 
-// WriteProjectedEvent mocks base method.
-func (m *MockProjectedEventWriter) WriteProjectedEvent(ctx context.Context, event entity.ProjectedEvent) error {
+// WriteProjectedClusterEvent mocks base method.
+func (m *MockProjectedClusterEventWriter) WriteProjectedClusterEvent(ctx context.Context, event entity.ProjectedClusterEvent) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteProjectedEvent", ctx, event)
+	ret := m.ctrl.Call(m, "WriteProjectedClusterEvent", ctx, event)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// WriteProjectedEvent indicates an expected call of WriteProjectedEvent.
-func (mr *MockProjectedEventWriterMockRecorder) WriteProjectedEvent(ctx, event any) *gomock.Call {
+// WriteProjectedClusterEvent indicates an expected call of WriteProjectedClusterEvent.
+func (mr *MockProjectedClusterEventWriterMockRecorder) WriteProjectedClusterEvent(ctx, event any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedEvent", reflect.TypeOf((*MockProjectedEventWriter)(nil).WriteProjectedEvent), ctx, event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedClusterEvent", reflect.TypeOf((*MockProjectedClusterEventWriter)(nil).WriteProjectedClusterEvent), ctx, event)
 }
 
-// MockProjectedEvent is a mock of ProjectedEvent interface.
-type MockProjectedEvent struct {
+// MockProjectedClusterStateWriter is a mock of ProjectedClusterStateWriter interface.
+type MockProjectedClusterStateWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockProjectedEventMockRecorder
+	recorder *MockProjectedClusterStateWriterMockRecorder
 	isgomock struct{}
 }
 
-// MockProjectedEventMockRecorder is the mock recorder for MockProjectedEvent.
-type MockProjectedEventMockRecorder struct {
-	mock *MockProjectedEvent
+// MockProjectedClusterStateWriterMockRecorder is the mock recorder for MockProjectedClusterStateWriter.
+type MockProjectedClusterStateWriterMockRecorder struct {
+	mock *MockProjectedClusterStateWriter
 }
 
-// NewMockProjectedEvent creates a new mock instance.
-func NewMockProjectedEvent(ctrl *gomock.Controller) *MockProjectedEvent {
-	mock := &MockProjectedEvent{ctrl: ctrl}
-	mock.recorder = &MockProjectedEventMockRecorder{mock}
+// NewMockProjectedClusterStateWriter creates a new mock instance.
+func NewMockProjectedClusterStateWriter(ctrl *gomock.Controller) *MockProjectedClusterStateWriter {
+	mock := &MockProjectedClusterStateWriter{ctrl: ctrl}
+	mock.recorder = &MockProjectedClusterStateWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockProjectedEvent) EXPECT() *MockProjectedEventMockRecorder {
+func (m *MockProjectedClusterStateWriter) EXPECT() *MockProjectedClusterStateWriterMockRecorder {
 	return m.recorder
 }
 
-// WriteProjectedEvent mocks base method.
-func (m *MockProjectedEvent) WriteProjectedEvent(ctx context.Context, event entity.ProjectedEvent) error {
+// WriteProjectedClusterState mocks base method.
+func (m *MockProjectedClusterStateWriter) WriteProjectedClusterState(ctx context.Context, state entity.ProjectedClusterState) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteProjectedEvent", ctx, event)
+	ret := m.ctrl.Call(m, "WriteProjectedClusterState", ctx, state)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// WriteProjectedEvent indicates an expected call of WriteProjectedEvent.
-func (mr *MockProjectedEventMockRecorder) WriteProjectedEvent(ctx, event any) *gomock.Call {
+// WriteProjectedClusterState indicates an expected call of WriteProjectedClusterState.
+func (mr *MockProjectedClusterStateWriterMockRecorder) WriteProjectedClusterState(ctx, state any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedEvent", reflect.TypeOf((*MockProjectedEvent)(nil).WriteProjectedEvent), ctx, event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedClusterState", reflect.TypeOf((*MockProjectedClusterStateWriter)(nil).WriteProjectedClusterState), ctx, state)
+}
+
+// MockProjectedInfraEnvWriter is a mock of ProjectedInfraEnvWriter interface.
+type MockProjectedInfraEnvWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockProjectedInfraEnvWriterMockRecorder
+	isgomock struct{}
+}
+
+// MockProjectedInfraEnvWriterMockRecorder is the mock recorder for MockProjectedInfraEnvWriter.
+type MockProjectedInfraEnvWriterMockRecorder struct {
+	mock *MockProjectedInfraEnvWriter
+}
+
+// NewMockProjectedInfraEnvWriter creates a new mock instance.
+func NewMockProjectedInfraEnvWriter(ctrl *gomock.Controller) *MockProjectedInfraEnvWriter {
+	mock := &MockProjectedInfraEnvWriter{ctrl: ctrl}
+	mock.recorder = &MockProjectedInfraEnvWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockProjectedInfraEnvWriter) EXPECT() *MockProjectedInfraEnvWriterMockRecorder {
+	return m.recorder
+}
+
+// WriteProjectedInfraEnv mocks base method.
+func (m *MockProjectedInfraEnvWriter) WriteProjectedInfraEnv(ctx context.Context, infraEnv entity.ProjectedInfraEnv) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteProjectedInfraEnv", ctx, infraEnv)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteProjectedInfraEnv indicates an expected call of WriteProjectedInfraEnv.
+func (mr *MockProjectedInfraEnvWriterMockRecorder) WriteProjectedInfraEnv(ctx, infraEnv any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedInfraEnv", reflect.TypeOf((*MockProjectedInfraEnvWriter)(nil).WriteProjectedInfraEnv), ctx, infraEnv)
+}
+
+// MockProjectionWriter is a mock of ProjectionWriter interface.
+type MockProjectionWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockProjectionWriterMockRecorder
+	isgomock struct{}
+}
+
+// MockProjectionWriterMockRecorder is the mock recorder for MockProjectionWriter.
+type MockProjectionWriterMockRecorder struct {
+	mock *MockProjectionWriter
+}
+
+// NewMockProjectionWriter creates a new mock instance.
+func NewMockProjectionWriter(ctrl *gomock.Controller) *MockProjectionWriter {
+	mock := &MockProjectionWriter{ctrl: ctrl}
+	mock.recorder = &MockProjectionWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockProjectionWriter) EXPECT() *MockProjectionWriterMockRecorder {
+	return m.recorder
+}
+
+// WriteProjectedClusterEvent mocks base method.
+func (m *MockProjectionWriter) WriteProjectedClusterEvent(ctx context.Context, event entity.ProjectedClusterEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteProjectedClusterEvent", ctx, event)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteProjectedClusterEvent indicates an expected call of WriteProjectedClusterEvent.
+func (mr *MockProjectionWriterMockRecorder) WriteProjectedClusterEvent(ctx, event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedClusterEvent", reflect.TypeOf((*MockProjectionWriter)(nil).WriteProjectedClusterEvent), ctx, event)
+}
+
+// WriteProjectedClusterState mocks base method.
+func (m *MockProjectionWriter) WriteProjectedClusterState(ctx context.Context, state entity.ProjectedClusterState) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteProjectedClusterState", ctx, state)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteProjectedClusterState indicates an expected call of WriteProjectedClusterState.
+func (mr *MockProjectionWriterMockRecorder) WriteProjectedClusterState(ctx, state any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedClusterState", reflect.TypeOf((*MockProjectionWriter)(nil).WriteProjectedClusterState), ctx, state)
+}
+
+// WriteProjectedInfraEnv mocks base method.
+func (m *MockProjectionWriter) WriteProjectedInfraEnv(ctx context.Context, infraEnv entity.ProjectedInfraEnv) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteProjectedInfraEnv", ctx, infraEnv)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteProjectedInfraEnv indicates an expected call of WriteProjectedInfraEnv.
+func (mr *MockProjectionWriterMockRecorder) WriteProjectedInfraEnv(ctx, infraEnv any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteProjectedInfraEnv", reflect.TypeOf((*MockProjectionWriter)(nil).WriteProjectedInfraEnv), ctx, infraEnv)
 }
