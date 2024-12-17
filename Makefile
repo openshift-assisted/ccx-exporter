@@ -149,7 +149,7 @@ check.mocks:
 ## Test
 ########
 
-.PHONY: test.e2e.fast test.e2e test.unit
+.PHONY: test.e2e.fast test.e2e test.unit test.coverage
 
 ## test.e2e.fast: Run e2e test without rebuilding and reimporting the processing image
 test.e2e.fast:
@@ -161,6 +161,12 @@ test.e2e: build.docker local.import test.e2e.fast
 ## test.unit: Run unit tests
 test.unit:
 	@go test ./pkg/... ./cmd/... ./internal/...
+
+## test.coverage: Run all tests and compute code coverage
+test.coverage: build.prepare build.docker local.import
+	@go test ./... -cover -coverprofile $(BUILD_DIR)/coverage.out.tmp
+	@cat $(BUILD_DIR)/coverage.out.tmp | grep -vE "mock_|$(GO_MODULE)/test/" > $(BUILD_DIR)/coverage.out
+	go tool cover -func $(BUILD_DIR)/coverage.out
 
 
 #######

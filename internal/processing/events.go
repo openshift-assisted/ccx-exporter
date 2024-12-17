@@ -3,22 +3,22 @@ package processing
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
 
-var (
-	errUnknownEvent   = errors.New("unknown event name")
-	errNotImplemented = errors.New("not implemented")
-)
+var errNotImplemented = errors.New("not implemented")
 
 const (
 	eventNameEvent         = "Event"
 	eventNameClusterState  = "ClusterState"
 	eventNameHostState     = "HostState"
 	eventNameInfraEnvState = "InfraEnv"
+
+	categoryUnknownEventName = "unknown_name"
 )
 
 type Main struct {
@@ -44,7 +44,7 @@ func (m Main) Process(ctx context.Context, event entity.Event) error {
 	case eventNameInfraEnvState:
 		return m.processInfraEnv(ctx, event)
 	default:
-		return pipeline.NewErrProcessingError(errUnknownEvent, "unknown_name", nil)
+		return pipeline.NewErrProcessingError(fmt.Errorf("unknown event name: %s", event.Name), categoryUnknownEventName, nil)
 	}
 }
 
