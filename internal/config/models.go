@@ -91,6 +91,7 @@ type KafkaConsumer struct {
 
 type Valkey struct {
 	URL   string
+	TTL   time.Duration
 	Creds ValkeyCreds
 }
 

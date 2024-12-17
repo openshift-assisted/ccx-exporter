@@ -17,17 +17,17 @@ type ProcessingError interface {
 	ProcessingErrorWriter
 }
 
-type EventWriter interface {
-	WriteEvent(ctx context.Context, event entity.Event) error
+type HostStateWriter interface {
+	WriteHostState(ctx context.Context, state entity.HostState) error
 }
 
-type EventReader interface {
-	GetEvent(ctx context.Context, clusterID string) (entity.Event, error)
+type HostStateReader interface {
+	GetHostStates(ctx context.Context, clusterID string) ([]entity.HostState, error)
 }
 
-type Event interface {
-	EventWriter
-	EventReader
+type HostState interface {
+	HostStateWriter
+	HostStateReader
 }
 
 type ProjectedEventWriter interface {

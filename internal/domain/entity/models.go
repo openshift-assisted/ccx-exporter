@@ -6,4 +6,11 @@ type Event struct {
 	Metadata map[string]interface{} `json:"metadata"`
 }
 
+type HostState struct {
+	ClusterID string
+	HostID    string
+	Payload   map[string]interface{}
+	Metadata  map[string]interface{}
+}
+
 type ProjectedEvent struct{}

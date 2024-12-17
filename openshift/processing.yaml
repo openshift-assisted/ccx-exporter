@@ -108,6 +108,7 @@ objects:
           group: ccx-exporter
       valkey:
         url: ${VALKEY_URL}
+        ttl: 1440h
       s3:
         bucket: ${S3_BUCKET}
         baseEndpoint: ${S3_BASE_ENDPOINT}

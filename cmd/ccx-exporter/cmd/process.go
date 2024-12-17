@@ -12,7 +12,7 @@ import (
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
-	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/event"
+	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/host"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/processingerror"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/projectedevent"
 	"github.com/openshift-assisted/ccx-exporter/internal/factory"
@@ -148,7 +148,7 @@ var processCmd = &cobra.Command{
 		projectedEventWriter := projectedevent.NewS3Writer(s3Client, conf.S3.Bucket, conf.S3.KeyPrefix)
 
 		// Create valkey repo for event
-		valkeyRepo := event.NewValkeyRepo(valkeyClient)
+		valkeyRepo := host.NewValkeyRepo(valkeyClient, conf.Valkey.TTL)
 
 		// Create Main Processing
 		mainProcessing := processing.NewMain(valkeyRepo, projectedEventWriter)

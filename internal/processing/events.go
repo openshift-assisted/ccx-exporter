@@ -22,13 +22,13 @@ const (
 )
 
 type Main struct {
-	eventRepo       repo.Event
+	hostRepo        repo.HostState
 	projectedWriter repo.ProjectedEventWriter
 }
 
-func NewMain(eventRepo repo.Event, projectedWriter repo.ProjectedEventWriter) Main {
+func NewMain(hostRepo repo.HostState, projectedWriter repo.ProjectedEventWriter) Main {
 	return Main{
-		eventRepo:       eventRepo,
+		hostRepo:        hostRepo,
 		projectedWriter: projectedWriter,
 	}
 }
