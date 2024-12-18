@@ -36,11 +36,11 @@ func ExtractString(payload map[string]interface{}, key string) (string, error) {
 	return ret, nil
 }
 
-func ValidateDate(date string) error {
-	_, err := time.Parse("2006-01-02T15:04:05.000Z", date)
+func ValidateDate(date string) (time.Time, error) {
+	ret, err := time.Parse("2006-01-02T15:04:05.000Z", date)
 	if err != nil {
-		return fmt.Errorf("failed to parse time: %w", err)
+		return ret, fmt.Errorf("failed to parse time: %w", err)
 	}
 
-	return nil
+	return ret, nil
 }

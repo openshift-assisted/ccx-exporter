@@ -1,5 +1,7 @@
 package entity
 
+import "time"
+
 type Event struct {
 	Name     string                 `json:"name"`
 	Payload  map[string]interface{} `json:"payload"`
@@ -13,8 +15,14 @@ type HostState struct {
 	Metadata  map[string]interface{}
 }
 
+type Projection struct {
+	ID        string
+	Timestamp time.Time
+	Payload   map[string]interface{}
+}
+
 type (
-	ProjectedClusterEvent map[string]interface{}
-	ProjectedClusterState map[string]interface{}
-	ProjectedInfraEnv     map[string]interface{}
+	ProjectedClusterEvent Projection
+	ProjectedClusterState Projection
+	ProjectedInfraEnv     Projection
 )

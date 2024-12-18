@@ -20,7 +20,7 @@ import (
 const (
 	unknownHostname = "<unknown>"
 
-	keyTemplate = "<prefix>/<year>/<month>/<day>/<topic>/<partition>-<offset>.json"
+	keyTemplate = "<prefix><year>/<month>/<day>/<topic>/<partition>-<offset>.json"
 )
 
 var ErrNilEvent = errors.New("nil event")

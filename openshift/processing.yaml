@@ -96,7 +96,7 @@ objects:
         bucket: ${DQL_S3_BUCKET}
         baseEndpoint: ${S3_BASE_ENDPOINT}
         usePathStyle: ${S3_USE_PATH_STYLE}
-        keyPrefix: ccx-exporter/errors
+        keyPrefix: ccx-exporter/errors/
       kafka:
         broker:
           urls: ${KAFKA_BROKERS}

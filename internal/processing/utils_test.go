@@ -2,6 +2,7 @@ package processing_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -10,16 +11,18 @@ import (
 
 func TestValidateDate(t *testing.T) {
 	type testCase struct {
-		name  string
-		date  string
-		valid bool
+		name     string
+		date     string
+		valid    bool
+		expected time.Time
 	}
 
 	cases := []testCase{
 		{
-			name:  "happy path",
-			date:  "2024-11-21T02:57:38.485Z",
-			valid: true,
+			name:     "happy path",
+			date:     "2024-11-21T02:57:38.485Z",
+			valid:    true,
+			expected: time.Date(2024, 11, 21, 2, 57, 38, 485000000, time.UTC),
 		},
 		{
 			name: "missing Z",
@@ -53,8 +56,12 @@ func TestValidateDate(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := processing.ValidateDate(c.date)
+			ts, err := processing.ValidateDate(c.date)
 			assert.Equal(t, c.valid, err == nil, err)
+
+			if c.valid {
+				assert.Equal(t, c.expected, ts)
+			}
 		})
 	}
 }
