@@ -17,8 +17,9 @@ type ErrProcessingError struct {
 }
 
 type Input struct {
-	Key   string
-	Value []byte
+	Source string
+	Key    string
+	Value  []byte
 }
 
 const (

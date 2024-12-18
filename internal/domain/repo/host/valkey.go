@@ -11,6 +11,7 @@ import (
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
+	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
 
 const (
@@ -96,7 +97,14 @@ func (r ValkeyRepo) GetHostStates(ctx context.Context, clusterID string) ([]enti
 
 		err := json.Unmarshal([]byte(jsonHost), &model)
 		if err != nil {
-			return nil, common.NewErrProcessingError(err, categoryInternalError, nil, "failed to unmarshal hgetall response for %s %s", clusterID, hostID)
+			input := pipeline.Input{Source: "valkey", Key: clusterID}
+
+			b, mErr := json.Marshal(result)
+			if mErr == nil {
+				input.Value = b
+			}
+
+			return nil, common.NewErrProcessingError(err, categoryInternalError, []pipeline.Input{input}, "failed to unmarshal hgetall response for %s %s", clusterID, hostID)
 		}
 
 		hostState := mapToEntity(model)

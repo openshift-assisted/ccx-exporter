@@ -115,6 +115,7 @@ func (r S3Writer) createProcessingError(pErr pipeline.ErrProcessingError) (Proce
 
 	for _, kv := range pErr.AdditionalInputs {
 		ret.Sources.Additional = append(ret.Sources.Additional, KeyValue{
+			From:  kv.Source,
 			Key:   kv.Key,
 			Value: kv.Value,
 		})

@@ -32,6 +32,7 @@ type Source struct {
 }
 
 type KeyValue struct {
+	From  string
 	Key   string
 	Value []byte
 }

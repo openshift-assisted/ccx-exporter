@@ -3,8 +3,9 @@ package processing_test
 import (
 	"testing"
 
-	"github.com/openshift-assisted/ccx-exporter/internal/processing"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/openshift-assisted/ccx-exporter/internal/processing"
 )
 
 func TestValidateDate(t *testing.T) {
