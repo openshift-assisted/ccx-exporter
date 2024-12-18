@@ -185,7 +185,7 @@ func NewErrorCountProcessing(registry prometheus.Registerer, config MetricsConfi
 func (p errorCountProcessing) Process(ctx context.Context, processingError ErrProcessingError) error {
 	category := processingError.Category
 	if category == "" {
-		category = "empty-category"
+		category = "empty_category"
 	}
 
 	p.counter.WithLabelValues(category).Inc()

@@ -3,6 +3,7 @@ package pipeline_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -302,6 +303,19 @@ var _ = Describe("Testing RetryProcessing", func() {
 			})
 		})
 
+		When("the inner processing only fails the first time with a wrapped retryable error", func() {
+			BeforeEach(func() {
+				gomock.InOrder(
+					proc.EXPECT().Process(gomock.Any(), data).Return(fmt.Errorf("wrapping: %w", errRetryableErrProcessingError)).Times(1),
+					proc.EXPECT().Process(gomock.Any(), data).Return(nil).Times(1),
+				)
+			})
+			It("should succeed", func(ctx SpecContext) {
+				err := retry.Process(ctx, data)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
 		When("the inner processing continuously fails", func() {
 			Context("With a generic error", func() {
 				BeforeEach(func() {
@@ -518,7 +532,7 @@ var _ = Describe("Testing error metrics decorator", func() {
 			Expect(metric.Label).To(HaveLen(1))
 			label := metric.Label[0]
 			Expect(*label.Name).To(Equal("category"))
-			Expect(*label.Value).To(Equal("empty-category"))
+			Expect(*label.Value).To(Equal("empty_category"))
 
 			// CounterVec
 			By("checking if it's a counter")
