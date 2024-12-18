@@ -34,12 +34,13 @@ func (r ValkeyRepo) WriteHostState(ctx context.Context, event entity.HostState) 
 	// Convert to local model
 	state := mapToModels(event)
 
-	// marshal local model
+	// Marshal local model
 	data, err := json.Marshal(state)
 	if err != nil {
 		return common.NewErrProcessingError(err, categoryInternalError, nil, "failed to marshal data")
 	}
 
+	// Set property
 	command := r.client.B().Hset().Key(event.ClusterID).FieldValue().FieldValue(event.HostID, string(data)).Build()
 
 	err = r.client.Do(ctx, command).Error()
@@ -52,6 +53,7 @@ func (r ValkeyRepo) WriteHostState(ctx context.Context, event entity.HostState) 
 		}
 	}
 
+	// Set expiration
 	expireCommand := r.client.B().Expire().Key(event.ClusterID).Seconds(int64(r.expiration.Seconds())).Build()
 
 	err = r.client.Do(ctx, expireCommand).Error()
@@ -116,7 +118,7 @@ func (r ValkeyRepo) isRetryable(err error) bool {
 
 	// Valkey specfic error
 	vErr, isValkeyError := valkey.IsValkeyErr(err)
-	if !isValkeyError {
+	if !isValkeyError { // Retryable errors should have been handled before this block
 		return false
 	}
 

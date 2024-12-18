@@ -52,7 +52,7 @@ func createValkeyClient(t *testing.T, container testcontainers.Container) valkey
 
 // Test suite definition
 
-type ValkeyDataIntegrationTestSuite struct {
+type ValkeyDataLayerTestSuite struct {
 	suite.Suite
 
 	client    valkey.Client
@@ -60,7 +60,7 @@ type ValkeyDataIntegrationTestSuite struct {
 	container testcontainers.Container
 }
 
-func (s *ValkeyDataIntegrationTestSuite) SetupSuite() {
+func (s *ValkeyDataLayerTestSuite) SetupSuite() {
 	t := s.T()
 
 	s.container = startValkey(t)
@@ -68,7 +68,7 @@ func (s *ValkeyDataIntegrationTestSuite) SetupSuite() {
 	s.repo = host.NewValkeyRepo(s.client, time.Minute)
 }
 
-func (s *ValkeyDataIntegrationTestSuite) TearDownTest() {
+func (s *ValkeyDataLayerTestSuite) TearDownTest() {
 	ctx := context.Background()
 	command := s.client.B().Flushall().Build()
 
@@ -78,15 +78,15 @@ func (s *ValkeyDataIntegrationTestSuite) TearDownTest() {
 
 // Run test
 
-func TestValkeyDataIntegrationTestSuite(t *testing.T) {
+func TestValkeyDataLayerTestSuite(t *testing.T) {
 	t.Parallel()
 
-	suite.Run(t, new(ValkeyDataIntegrationTestSuite))
+	suite.Run(t, new(ValkeyDataLayerTestSuite))
 }
 
 // Test
 
-func (s *ValkeyDataIntegrationTestSuite) TestInsertAndRead() {
+func (s *ValkeyDataLayerTestSuite) TestInsertAndRead() {
 	ctx := context.Background()
 	t := s.T()
 
@@ -101,7 +101,7 @@ func (s *ValkeyDataIntegrationTestSuite) TestInsertAndRead() {
 	assert.Equal(t, hostState, res[0], "different host state")
 }
 
-func (s *ValkeyDataIntegrationTestSuite) TestOverwriteKey() {
+func (s *ValkeyDataLayerTestSuite) TestOverwriteKey() {
 	ctx := context.Background()
 	t := s.T()
 
@@ -121,7 +121,7 @@ func (s *ValkeyDataIntegrationTestSuite) TestOverwriteKey() {
 	assert.Equal(t, hostState, res[0], "different host state")
 }
 
-func (s *ValkeyDataIntegrationTestSuite) TestGetUnknowKey() {
+func (s *ValkeyDataLayerTestSuite) TestGetUnknowKey() {
 	ctx := context.Background()
 	t := s.T()
 
@@ -131,7 +131,7 @@ func (s *ValkeyDataIntegrationTestSuite) TestGetUnknowKey() {
 	require.Len(t, res, 0, "unexpected number of host state: %d", len(res))
 }
 
-func (s *ValkeyDataIntegrationTestSuite) TestExpiration() {
+func (s *ValkeyDataLayerTestSuite) TestExpiration() {
 	ctx := context.Background()
 	t := s.T()
 
@@ -169,6 +169,5 @@ func TestLosingConnection(t *testing.T) {
 
 	_, err = repo.GetHostStates(ctx, "unknown")
 	require.Error(t, err, "get host states should fail")
-
 	require.ErrorIs(t, err, pipeline.ErrRetryableError, "error should be retryable: %v", reflect.TypeOf(err))
 }
