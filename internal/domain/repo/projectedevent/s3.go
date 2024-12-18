@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
+	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
 )
 
@@ -18,6 +19,9 @@ const (
 	eventTypeEvents    = ".events"
 	eventTypeClusters  = ".clusters"
 	eventTypeInfraEnvs = ".infra_envs"
+
+	categoryInternalError = "s3_internal_error"
+	categoryS3ClientError = "s3_client"
 )
 
 type S3Writer struct {
@@ -51,7 +55,7 @@ func (s S3Writer) putObject(ctx context.Context, eventType string, obj entity.Pr
 	// Marshal Payload
 	b, err := json.Marshal(obj.Payload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %w", err)
+		return common.NewErrProcessingError(err, categoryInternalError, nil, "failed to marshal payload")
 	}
 
 	// Compute object key
@@ -66,7 +70,7 @@ func (s S3Writer) putObject(ctx context.Context, eventType string, obj entity.Pr
 
 	_, err = s.s3client.PutObject(ctx, params)
 	if err != nil {
-		return fmt.Errorf("failed to write in s3: %w", err)
+		return common.NewErrProcessingError(err, categoryS3ClientError, nil, "failed to put object")
 	}
 
 	return nil
