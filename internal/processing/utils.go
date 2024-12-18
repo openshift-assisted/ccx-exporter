@@ -1,6 +1,8 @@
 package processing
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -41,6 +43,35 @@ func ValidateDate(date string) (time.Time, error) {
 	if err != nil {
 		return ret, fmt.Errorf("failed to parse time: %w", err)
 	}
+
+	return ret, nil
+}
+
+func CopyPayload(payload map[string]interface{}) map[string]interface{} {
+	ret := make(map[string]interface{})
+
+	for k, v := range payload {
+		ret[k] = v
+	}
+
+	return ret
+}
+
+func HashValue(payload map[string]interface{}, key string) (string, error) {
+	value, err := ExtractString(payload, key)
+	if err != nil {
+		return "", fmt.Errorf("failed to extract string: %w", err)
+	}
+
+	hash := md5.New()
+
+	_, err = hash.Write([]byte(value))
+	if err != nil {
+		return "", fmt.Errorf("failed to hash value: %w", err)
+	}
+
+	hashBytes := hash.Sum(nil)
+	ret := hex.EncodeToString(hashBytes[:])
 
 	return ret, nil
 }
