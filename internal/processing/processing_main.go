@@ -55,7 +55,3 @@ func (m Main) Process(processingCtx context.Context, event entity.Event) error {
 func (m Main) processClusterState(ctx context.Context, event entity.Event) error {
 	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
 }
-
-func (m Main) processInfraEnv(ctx context.Context, event entity.Event) error {
-	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
-}
