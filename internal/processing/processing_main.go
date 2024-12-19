@@ -2,7 +2,6 @@ package processing
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -10,8 +9,6 @@ import (
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
-
-var errNotImplemented = errors.New("not implemented")
 
 const (
 	eventNameEvent         = "Event"
@@ -50,8 +47,4 @@ func (m Main) Process(processingCtx context.Context, event entity.Event) error {
 	default:
 		return pipeline.NewErrProcessingError(fmt.Errorf("unknown event name: %s", event.Name), categoryUnknownEventName, nil)
 	}
-}
-
-func (m Main) processClusterState(ctx context.Context, event entity.Event) error {
-	return pipeline.NewErrProcessingError(errNotImplemented, "not_implemented", nil)
 }
