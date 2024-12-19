@@ -40,7 +40,12 @@ func (m Main) processHostState(ctx context.Context, event entity.Event) error {
 	delete(payload, "inventory")
 
 	// Create HostState
-	hostState := m.createHostState(hostID, clusterID, payload, event.Metadata)
+	hostState := entity.HostState{
+		ClusterID: clusterID,
+		HostID:    hostID,
+		Metadata:  CopyPayload(event.Metadata),
+		Payload:   payload,
+	}
 
 	// Store
 	err = m.hostRepo.WriteHostState(ctx, hostState)
@@ -49,13 +54,4 @@ func (m Main) processHostState(ctx context.Context, event entity.Event) error {
 	}
 
 	return nil
-}
-
-func (m Main) createHostState(id string, clusterID string, payload map[string]interface{}, metadata map[string]interface{}) entity.HostState {
-	return entity.HostState{
-		ClusterID: clusterID,
-		HostID:    id,
-		Metadata:  metadata,
-		Payload:   payload,
-	}
 }

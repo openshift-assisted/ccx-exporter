@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"time"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
@@ -25,10 +24,10 @@ func (m Main) processClusterEvent(ctx context.Context, event entity.Event) error
 		return common.NewErrProcessingError(err, categoryErrInvalidClusterEvent, nil, "failed to extract event_time")
 	}
 
-	// Validate format
+	// Validate date format
 	ts, err := ValidateDate(eventTime)
 	if err != nil {
-		return common.NewErrProcessingError(err, categoryErrInvalidClusterEvent, nil, "invalid date format")
+		return common.NewErrProcessingError(err, categoryErrInvalidClusterEvent, nil, "invalid date format %s", eventTime)
 	}
 
 	// Compute event ID
@@ -40,9 +39,14 @@ func (m Main) processClusterEvent(ctx context.Context, event entity.Event) error
 	eventID := m.computeEventID(clusterID, eventTime, message)
 
 	// Create ClusterEvent entity
-	clusterEvent, err := m.createClusterEvent(event, eventID, ts)
-	if err != nil {
-		return common.NewErrProcessingError(err, categoryErrInvalidClusterEvent, nil, "failed to create cluster event")
+	payload := CopyPayload(event.Payload)
+	payload["event_id"] = eventID
+	payload["event_time"] = FormatDate(ts)
+
+	clusterEvent := entity.ProjectedClusterEvent{
+		ID:        eventID,
+		Timestamp: ts,
+		Payload:   payload,
 	}
 
 	// Call repo
@@ -52,18 +56,6 @@ func (m Main) processClusterEvent(ctx context.Context, event entity.Event) error
 	}
 
 	return nil
-}
-
-func (m Main) createClusterEvent(event entity.Event, eventID string, ts time.Time) (entity.ProjectedClusterEvent, error) {
-	ret := entity.ProjectedClusterEvent{
-		ID:        eventID,
-		Timestamp: ts,
-		Payload:   event.Payload,
-	}
-
-	ret.Payload["event_id"] = eventID
-
-	return ret, nil
 }
 
 func (m Main) computeEventID(clusterID, eventTime, message string) string {
