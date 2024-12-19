@@ -46,6 +46,10 @@ func (p CountLateData) Process(ctx context.Context, event entity.Event) error {
 		return err // Count only successfully processed data
 	}
 
+	if event.Name == eventNameHostState {
+		return nil
+	}
+
 	eventTime, err := ExtractEventTime(event)
 	if err != nil {
 		log.Logger().Error(err, "Failed to extract time")
