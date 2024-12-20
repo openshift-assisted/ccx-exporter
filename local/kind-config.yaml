@@ -12,3 +12,8 @@ nodes:
   # localstack s3
   - containerPort: 31566
     hostPort: 31566
+  extraMounts:
+  # code coverage for e2e
+  - hostPath: build/coverdata
+    containerPath: /coverdata
+    readOnly: false

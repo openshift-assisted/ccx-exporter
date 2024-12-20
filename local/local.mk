@@ -15,7 +15,7 @@ S3_BUCKET       := ccx-processing-result
 
 .PHONY: local.kind
 ## local.kind: Start kind cluster
-local.kind:
+local.kind: test.prepare
 	@kind create cluster -n $(CLUSTER_NAME) --image kindest/node:v1.28.0 --config $(CURDIR)/local/kind-config.yaml
 
 .PHONY: local.kubeconfig
@@ -83,7 +83,7 @@ local.processing.secret: local.context
 .PHONY: local.processing
 ## local.processing: Deploy processing
 local.processing: local.context
-	@KUBECONFIG=$(KUBECONFIG):$(LOCAL_KUBE_CONFIG) oc process \
+	@KUBECONFIG=$(KUBECONFIG):$(LOCAL_KUBE_CONFIG) oc process -o yaml \
 		-f $(CURDIR)/openshift/processing.yaml --local \
 		-p IMAGE_PULL_POLICY=Never \
 		-p IMAGE_TAG=$(GIT_COMMIT) \
@@ -96,7 +96,8 @@ local.processing: local.context
 		-p S3_BUCKET=$(S3_BUCKET) \
 		-p DQL_S3_BUCKET=$(DQL_S3_BUCKET) \
 		-p KAFKA_USE_SCRAM_AUTH=false \
-	| oc apply -n $(NAMESPACE) -f -
+		> $(CURDIR)/local/template.yaml
+	@oc kustomize $(CURDIR)/local | oc apply -n $(NAMESPACE) -f -
 	@$(KUBE_WAIT) deployment/$(DEPLOYMENT_NAME)
 
 .PHONY: local.processing.update

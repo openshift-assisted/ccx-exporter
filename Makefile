@@ -98,12 +98,13 @@ build.local: build.prepare
 		  -X 'github.com/prometheus/common/version.BuildUser=$(shell whoami)' \
 		  -X 'github.com/prometheus/common/version.BuildDate=$(shell date)'   \
 		" \
+		$(BUILD_ARGS) \
 		-o $(BUILD_DIR)/ccx-exporter \
 		$(CURDIR)/cmd/ccx-exporter/main.go
 
 ## build.docker: Build image and tag
 build.docker:
-	docker build --build-arg version=$(GIT_COMMIT) -t $(IMAGE_FULL) .
+	docker build --build-arg version=$(GIT_COMMIT) --build-arg BUILD_ARGS="$(BUILD_ARGS)" -t $(IMAGE_FULL) .
 
 
 ###########
@@ -149,7 +150,15 @@ check.mocks:
 ## Test
 ########
 
-.PHONY: test.e2e.fast test.e2e test.unit test.coverage
+COVERAGE_DIR=$(BUILD_DIR)/coverdata
+
+.PHONY: test.prepare test.e2e.fast test.e2e test.unit test.coverage
+
+## test.prepare: Create build/coverdata/ folder
+test.prepare:
+	@mkdir -p $(COVERAGE_DIR)
+	@rm -fr $(COVERAGE_DIR)/*
+	@chmod 777 $(COVERAGE_DIR)
 
 ## test.e2e.fast: Run e2e test without rebuilding and reimporting the processing image
 test.e2e.fast:
@@ -163,10 +172,12 @@ test.unit:
 	@go test ./pkg/... ./cmd/... ./internal/...
 
 ## test.coverage: Run all tests and compute code coverage
-test.coverage: build.prepare build.docker local.import
-	@go test ./... -cover -coverprofile $(BUILD_DIR)/coverage.out.tmp
-	@cat $(BUILD_DIR)/coverage.out.tmp | grep -vE "mock_|$(GO_MODULE)/test/" > $(BUILD_DIR)/coverage.out
-	go tool cover -func $(BUILD_DIR)/coverage.out
+test.coverage: test.prepare
+	@$(MAKE) -s build.docker local.import BUILD_ARGS="-cover"
+	@go test ./... -cover -test.gocoverdir $(CURDIR)/build/coverdata
+	@go tool covdata textfmt -i=$(COVERAGE_DIR) -o=$(COVERAGE_DIR)/coverage.out.tmp
+	@cat $(COVERAGE_DIR)/coverage.out.tmp | grep -vE "mock_|$(GO_MODULE)/test/|/build/cmd/ccx-exporter/main.go" > $(COVERAGE_DIR)/coverage.out
+	@go tool cover -func $(COVERAGE_DIR)/coverage.out
 
 
 #######

@@ -2,6 +2,8 @@
 ## Build go binary
 FROM registry.access.redhat.com/ubi9/go-toolset:1.22.5 AS build
 
+ARG BUILD_ARGS
+
 USER root
 
 WORKDIR /build
@@ -13,7 +15,7 @@ RUN --mount=type=cache,mode=0755,target=/go/pkg/mod go mod download
 
 COPY . .
 
-RUN --mount=type=cache,mode=0755,target=/go/pkg/mod GOOS=linux make build.local
+RUN --mount=type=cache,mode=0755,target=/go/pkg/mod GOOS=linux make build.local BUILD_ARGS="${BUILD_ARGS}"
 
 
 ############

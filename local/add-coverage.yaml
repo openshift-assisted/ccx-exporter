@@ -1,0 +1,18 @@
+# add volume and env variable
+- op: add
+  path: /spec/template/spec/containers/0/env/0
+  value:
+    name: GOCOVERDIR
+    value: /coverdata
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts/0
+  value:
+    name: coverage
+    mountPath: /coverdata
+- op: add
+  path: /spec/template/spec/volumes/0
+  value:
+    name: coverage
+    hostPath:
+      path: /coverdata
+      type: Directory
