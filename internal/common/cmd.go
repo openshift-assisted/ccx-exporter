@@ -29,7 +29,6 @@ func SetupSignalHandler(ctx context.Context) context.Context {
 
 		<-c
 		logger.V(1).Info("Signal received to stop")
-		// logger.Error(coverage.WriteCountersDir("/coverdata"), "writing counter dir")
 		cancel()
 
 		<-c
