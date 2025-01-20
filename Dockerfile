@@ -1,6 +1,6 @@
 ###################
 ## Build go binary
-FROM registry.access.redhat.com/ubi9/go-toolset:1.22.5 AS build
+FROM registry.access.redhat.com/ubi9/go-toolset:1.22.9-1736729788 AS build
 
 ARG BUILD_ARGS
 
@@ -20,7 +20,7 @@ RUN --mount=type=cache,mode=0755,target=/go/pkg/mod GOOS=linux make build.local 
 
 ############
 ## Licenses
-FROM registry.access.redhat.com/ubi9/go-toolset:1.22.5 AS licenses
+FROM registry.access.redhat.com/ubi9/go-toolset:1.22.9-1736729788 AS licenses
 
 ADD . /app
 WORKDIR /app
