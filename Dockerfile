@@ -31,7 +31,7 @@ RUN ${HOME}/go/bin/go-licenses save --save_path /tmp/licenses ./...
 
 ########################
 ## Create runtime image
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5-1736404155
 
 ARG release=main
 ARG version=latest
