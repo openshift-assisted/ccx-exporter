@@ -59,10 +59,8 @@ parameters:
   value: "true"
 - name: KAFKA_USER_SECRETNAME
   value: kafka-secret
-- name: KAFKA_USER_SECRETKEY
-  value: user
-- name: KAFKA_PASSWORD_SECRETNAME
-  value: kafka-secret
+- name: KAFKA_USERNAME_SECRETKEY
+  value: username
 - name: KAFKA_PASSWORD_SECRETKEY
   value: password
 
@@ -73,12 +71,10 @@ parameters:
   value: quay.io/strimzi/kafka
 - name: KAFKA_IMAGE_TAG
   value: latest-kafka-3.8.0
-- name: ADMIN_USERNAME_SECRETNAME
+- name: ADMIN_USER_SECRETNAME
   value: kafka-admin-user
 - name: ADMIN_USERNAME_SECRETKEY
   value: username
-- name: ADMIN_PASSWORD_SECRETNAME
-  value: kafka-admin-user
 - name: ADMIN_PASSWORD_SECRETKEY
   value: password
 - name: ZOOKEEPER_TLS
@@ -168,13 +164,13 @@ objects:
           - name: ADMIN_USERNAME
             valueFrom:
               secretKeyRef:
+                name: ${ADMIN_USER_SECRETNAME}
                 key: ${ADMIN_USERNAME_SECRETKEY}
-                name: ${ADMIN_USERNAME_SECRETNAME}
           - name: ADMIN_PASSWORD
             valueFrom:
               secretKeyRef:
+                name: ${ADMIN_USER_SECRETNAME}
                 key: ${ADMIN_PASSWORD_SECRETKEY}
-                name: ${ADMIN_PASSWORD_SECRETNAME}
           - name: KAFKA_GROUP_ID
             value: ${KAFKA_GROUP_ID}
           - name: KAFKA_TOPIC
@@ -278,11 +274,11 @@ objects:
             valueFrom:
               secretKeyRef:
                 name: ${KAFKA_USER_SECRETNAME}
-                key: ${KAFKA_USER_SECRETKEY}
+                key: ${KAFKA_USERNAME_SECRETKEY}
           - name: CCXEXPORTER_KAFKA_BROKER_CREDS_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: ${KAFKA_PASSWORD_SECRETNAME}
+                name: ${KAFKA_USER_SECRETNAME}
                 key: ${KAFKA_PASSWORD_SECRETKEY}
           image: ${IMAGE_NAME}:${IMAGE_TAG}
           imagePullPolicy: ${IMAGE_PULL_POLICY}

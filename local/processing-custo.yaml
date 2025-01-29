@@ -6,7 +6,7 @@ metadata:
   namespace: ccx-exporter
 type: Opaque
 data:
-  user: dXNlbGVzcw== # useless
+  username: dXNlbGVzcw== # useless
   password: dXNlbGVzcw== # useless
 ---
 apiVersion: v1
