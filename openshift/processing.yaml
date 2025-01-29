@@ -186,7 +186,7 @@ objects:
             valueFrom:
               secretKeyRef:
                 name: ${KAFKA_USER_SECRETNAME}
-                key: ${KAFKA_USER_SECRETKEY}
+                key: ${KAFKA_USERNAME_SECRETKEY}
           image: ${KAFKA_IMAGE_NAME}:${KAFKA_IMAGE_TAG}
           imagePullPolicy: Always
           name: configure-acl
