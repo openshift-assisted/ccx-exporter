@@ -186,6 +186,8 @@ test.coverage: test.prepare
 
 .PHONY: logs.kube
 
+DEPLOYMENT=ccx-exporter
+
 ANYTHING_BETWEEN_QUOTES=\"\([^\"]*\)\"
 
 define COLORIZE
@@ -203,7 +205,7 @@ endef
 
 ## logs.kube: Display processing log with color and unify level
 logs.kube:
-	@kubectl logs -f deployment/ccx-exporter | $(COLORIZE)
+	@kubectl logs -f deployment/$(DEPLOYMENT) | $(COLORIZE)
 
 
 ########
