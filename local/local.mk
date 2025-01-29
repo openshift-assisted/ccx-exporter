@@ -101,6 +101,7 @@ local.processing: local.context
 		-p S3_DLQ_BUCKET_SECRETNAME=$(S3_DLQ_BUCKET_SECRETNAME) \
 		-p KAFKA_TOPIC=$(KAFKA_TOPIC) \
 		-p KAFKA_USE_SCRAM_AUTH=false \
+		-p KAFKA_USE_TLS=false \
 		-p SKIP_ACL=true \
 		> $(CURDIR)/local/template.yaml
 	@oc kustomize $(CURDIR)/local | oc apply -n $(NAMESPACE) -f -

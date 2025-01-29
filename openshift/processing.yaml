@@ -49,6 +49,8 @@ parameters:
   value: kafka-urls
 - name: KAFKA_BOOTSTRAP_URL_SECRETKEY
   value: bootstrap_brokers
+- name: KAFKA_USE_TLS
+  value: "true"
 - name: KAFKA_VERSION
   value: "3.7.1"
 - name: KAFKA_TOPIC
@@ -128,6 +130,7 @@ objects:
       kafka:
         broker:
           version: ${KAFKA_VERSION}
+          useTLS: ${KAFKA_USE_TLS}
           creds:
             useSCRAMSHA512Auth: ${KAFKA_USE_SCRAM_AUTH}
         consumer:

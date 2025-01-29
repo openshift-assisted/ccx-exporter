@@ -59,6 +59,7 @@ type KafkaBroker struct {
 	URLs    string
 	Version string
 	Creds   KafkaCreds
+	UseTLS  bool
 }
 
 type KafkaCreds struct {

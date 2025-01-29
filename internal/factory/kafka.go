@@ -48,6 +48,10 @@ func CreateKafkaConsumer(kafkaConfig config.Kafka) (sarama.ConsumerGroup, error)
 		conf.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA512
 	}
 
+	if kafkaConfig.Broker.UseTLS {
+		conf.Net.TLS.Enable = true
+	}
+
 	// kafka consumer group
 	ret, err := sarama.NewConsumerGroup(urls, kafkaConfig.Consumer.Group, conf)
 	if err != nil {
