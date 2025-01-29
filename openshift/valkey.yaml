@@ -15,8 +15,15 @@ parameters:
 - name: VALKEY_STORAGE
   value: 5Gi
 - name: VALKEY_CREDENTIALS_SECRETNAME
-  value: valkey-creds
-
+  value: valkey-credentials
+- name: VALKEY_MEMORY_REQUEST
+  value: 500Mi
+- name: VALKEY_MEMORY_LIMIT
+  value: 1Gi
+- name: VALKEY_CPU_REQUEST
+  value: 50m
+- name: VALKEY_CPU_LIMIT
+  value: "1"
 objects:
 - apiVersion: v1
   kind: ConfigMap
@@ -206,8 +213,12 @@ objects:
               - name: valkey
                 containerPort: 6379
             resources:
-              limits: {}
-              requests: {}
+              limits:
+                cpu: ${VALKEY_CPU_LIMIT}
+                memory: ${VALKEY_MEMORY_LIMIT}
+              requests:
+                cpu: ${VALKEY_CPU_REQUEST}
+                memory: ${VALKEY_MEMORY_REQUEST}
             livenessProbe:
               initialDelaySeconds: 20
               periodSeconds: 5

@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -28,6 +29,8 @@ const (
 	localstackURL = "http://localhost:31566"
 
 	maxSizeName = 12
+
+	namespace = "ccx-exporter"
 )
 
 type TestConfig struct {
@@ -216,14 +219,19 @@ func (tc TestContext) Close(ctx context.Context) error {
 // Processing func
 
 func (tc TestContext) DeployProcessing(ctx context.Context) error {
-	err := runMakefileCommand(
+	err := tc.createBucketSecrets(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = runMakefileCommand(
 		"local.processing",
 		map[string]string{
-			"DEPLOYMENT_NAME": tc.Config.DeploymentName,
-			"VALKEY_URL":      tc.Config.ValkeyURL,
-			"DQL_S3_BUCKET":   tc.Config.DLQS3Bucket,
-			"KAFKA_TOPIC":     tc.Config.KafkaTopic,
-			"S3_BUCKET":       tc.Config.OutputS3Bucket,
+			"DEPLOYMENT_NAME":          tc.Config.DeploymentName,
+			"VALKEY_URL":               tc.Config.ValkeyURL,
+			"KAFKA_TOPIC":              tc.Config.KafkaTopic,
+			"S3_BUCKET_SECRETNAME":     tc.Config.OutputS3Bucket,
+			"S3_DLQ_BUCKET_SECRETNAME": tc.Config.DLQS3Bucket,
 		},
 	)
 	if err != nil {
@@ -234,7 +242,12 @@ func (tc TestContext) DeployProcessing(ctx context.Context) error {
 }
 
 func (tc TestContext) DeleteProcessing(ctx context.Context) error {
-	err := runMakefileCommand(
+	err := tc.deleteBucketSecrets(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = runMakefileCommand(
 		"local.delete.processing",
 		map[string]string{
 			"DEPLOYMENT_NAME": tc.Config.DeploymentName,
@@ -245,6 +258,49 @@ func (tc TestContext) DeleteProcessing(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (tc TestContext) createBucketSecrets(ctx context.Context) error {
+	_, err := tc.kubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.OutputS3Bucket), metav1.CreateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to create s3 secret for result: %w", err)
+	}
+
+	_, err = tc.kubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.DLQS3Bucket), metav1.CreateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to create s3 secret for dlq: %w", err)
+	}
+
+	return nil
+}
+
+func (tc TestContext) deleteBucketSecrets(ctx context.Context) error {
+	err := tc.kubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.OutputS3Bucket, metav1.DeleteOptions{})
+	if err != nil && !k8serrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete s3 secret for result: %w", err)
+	}
+
+	err = tc.kubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.DLQS3Bucket, metav1.DeleteOptions{})
+	if err != nil && !k8serrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete s3 secret for dlq: %w", err)
+	}
+
+	return nil
+}
+
+func createBucketSecret(bucket string) *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: bucket,
+		},
+		StringData: map[string]string{
+			"aws_access_key_id":     "useless",
+			"aws_secret_access_key": "useless",
+			"aws_region":            "us-east-1",
+			"bucket":                bucket,
+			"endpoint":              "http://localstack:4566",
+		},
+	}
 }
 
 // Valkey func
@@ -434,7 +490,7 @@ func (tc TestContext) ListProcessingPod(ctx context.Context) (*corev1.PodList, e
 		return nil, fmt.Errorf("failed to create label selector: %w", err)
 	}
 
-	ret, err := tc.kubeClient.CoreV1().Pods("ccx-exporter").List(ctx, metav1.ListOptions{
+	ret, err := tc.kubeClient.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: label.String(),
 	})
 	if err != nil {

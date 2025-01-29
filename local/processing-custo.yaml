@@ -2,29 +2,54 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: dlq-aws-creds
-  namespace: ccx-exporter
-type: Opaque
-data:
-  accesskeyid: dXNlbGVzcw== # useless
-  secretaccesskey: dXNlbGVzcw== # useless
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: aws-creds
-  namespace: ccx-exporter
-type: Opaque
-data:
-  accesskeyid: dXNlbGVzcw== # useless
-  secretaccesskey: dXNlbGVzcw== # useless
----
-apiVersion: v1
-kind: Secret
-metadata:
   name: kafka-secret
   namespace: ccx-exporter
 type: Opaque
 data:
   user: dXNlbGVzcw== # useless
   password: dXNlbGVzcw== # useless
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-admin-user
+  namespace: ccx-exporter
+type: Opaque
+data:
+  username: dXNlbGVzcw== # useless
+  password: dXNlbGVzcw== # useless
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka
+  namespace: ccx-exporter
+type: Opaque
+data:
+  zookeeper_connect_string: dXNlbGVzcw== # useless
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ccx-processing-result
+  namespace: ccx-exporter
+type: Opaque
+data:
+  aws_access_key_id: dXNlbGVzcw== # useless
+  aws_secret_access_key: dXNlbGVzcw== # useless
+  aws_region: dXMtZWFzdC0x # us-east-1
+  bucket: Y2N4LXByb2Nlc3NpbmctcmVzdWx0 # ccx-processing-result
+  endpoint: aHR0cDovL2xvY2Fsc3RhY2s6NDU2Ng== # http://localstack:4566
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ccx-processing-dlq
+  namespace: ccx-exporter
+type: Opaque
+data:
+  aws_access_key_id: dXNlbGVzcw== # useless
+  aws_secret_access_key: dXNlbGVzcw== # useless
+  aws_region: dXMtZWFzdC0x # us-east-1
+  bucket: Y2N4LXByb2Nlc3NpbmctZGxx # ccx-processing-dlq
+  endpoint: aHR0cDovL2xvY2Fsc3RhY2s6NDU2Ng== # http://localstack:4566

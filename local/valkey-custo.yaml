@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: valkey-creds
+  name: valkey-credentials
   namespace: ccx-exporter
 type: Opaque
 data:

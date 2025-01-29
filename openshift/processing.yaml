@@ -32,45 +32,27 @@ parameters:
 - name: VALKEY_URL
   value: valkey-ccx-exporter-0.valkey-ccx-exporter-headless:6379
 - name: VALKEY_PASSWORD_SECRETNAME
-  value: valkey-creds
+  value: valkey-credentials
 - name: VALKEY_PASSWORD_SECRETKEY
   value: password
 
-# common s3
-- name: S3_BASE_ENDPOINT
-  value: ""
+# s3
 - name: S3_USE_PATH_STYLE
   value: "false"
-
-# s3
-- name: S3_BUCKET
+- name: S3_BUCKET_SECRETNAME
   value: ccx-processing-result
-- name: AWS_ACCESS_KEY_ID_SECRETNAME
-  value: aws-creds
-- name: AWS_ACCESS_KEY_ID_SECRETKEY
-  value: accesskeyid
-- name: AWS_SECRET_ACCESS_KEY_SECRETNAME
-  value: aws-creds
-- name: AWS_SECRET_ACCESS_KEY_SECRETKEY
-  value: secretaccesskey
-
-# DLQ
-- name: DQL_S3_BUCKET
+- name: S3_DLQ_BUCKET_SECRETNAME
   value: ccx-processing-dlq
-- name: DLQ_AWS_ACCESS_KEY_ID_SECRETNAME
-  value: dlq-aws-creds
-- name: DLQ_AWS_ACCESS_KEY_ID_SECRETKEY
-  value: accesskeyid
-- name: DLQ_AWS_SECRET_ACCESS_KEY_SECRETNAME
-  value: dlq-aws-creds
-- name: DLQ_AWS_SECRET_ACCESS_KEY_SECRETKEY
-  value: secretaccesskey
 
 # Kafka
 - name: KAFKA_BROKERS
   value: kraft-0.kraft:9092
+- name: KAFKA_VERSION
+  value: "3.7.1"
 - name: KAFKA_TOPIC
   value: assisted-service-events
+- name: KAFKA_GROUP_ID
+  value: ccx-exporter
 - name: KAFKA_USE_SCRAM_AUTH
   value: "true"
 - name: KAFKA_USER_SECRETNAME
@@ -82,8 +64,60 @@ parameters:
 - name: KAFKA_PASSWORD_SECRETKEY
   value: password
 
+# Kafka init container only
+- name: SKIP_ACL
+  value: "false"
+- name: KAFKA_IMAGE_NAME
+  value: quay.io/strimzi/kafka
+- name: KAFKA_IMAGE_TAG
+  value: latest-kafka-3.8.0
+- name: ADMIN_USERNAME_SECRETNAME
+  value: kafka-admin-user
+- name: ADMIN_USERNAME_SECRETKEY
+  value: username
+- name: ADMIN_PASSWORD_SECRETNAME
+  value: kafka-admin-user
+- name: ADMIN_PASSWORD_SECRETKEY
+  value: password
+- name: ZOOKEEPER_TLS
+  value: "false"
+- name: ZOOKEEPER_CONNECT_STRING_SECRETKEY
+  value: zookeeper_connect_string
+- name: ZOOKEEPER_CONNECT_STRING_SECRETNAME
+  value: kafka
+
 
 objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ccx-exporter-user-acl
+  data:
+    zookeeper.config: |-
+      zookeeper.ssl.client.enable=true
+      zookeeper.ssl.protocol=TLSv1.2
+      zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
+    configure_acl.sh: |
+      #!/bin/bash
+
+      if [ "${SKIP_ACL}" == "true" ]
+      then
+        exit 0
+      fi
+
+      export ZOOKEEPER=$(echo ${ZOOKEEPER_CONNECT_STRING} | cut -d, -f1)
+      ZK_TLS=""
+      if [ "${ZOOKEEPER_TLS}" == "true" ]; then
+        ZK_TLS="--zk-tls-config-file /tmp/scripts/zookeeper.config"
+      fi
+
+      echo "sasl.mechanism=SCRAM-SHA-512
+      security.protocol=SASL_SSL
+      sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required \\
+          username=\"${ADMIN_USERNAME}\" \\
+          password=\"${ADMIN_PASSWORD}\";" > /tmp/admin-scram.properties
+
+      /opt/kafka/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=${ZOOKEEPER} --add --allow-principal "User:${CCX_EXPORTER_USERNAME}" --operation Read --group "${KAFKA_GROUP_ID}" --topic "${KAFKA_TOPIC}" ${ZK_TLS}
 - apiVersion: v1
   kind: ConfigMap
   metadata:
@@ -93,26 +127,23 @@ objects:
       log:
         level: ${LOGS_LEVEL}
       deadletterqueue:
-        bucket: ${DQL_S3_BUCKET}
-        baseEndpoint: ${S3_BASE_ENDPOINT}
         usePathStyle: ${S3_USE_PATH_STYLE}
         keyPrefix: ccx-exporter/errors/
       kafka:
         broker:
           urls: ${KAFKA_BROKERS}
-          version: "3.6.0"
+          version: ${KAFKA_VERSION}
           creds:
             useSCRAMSHA512Auth: ${KAFKA_USE_SCRAM_AUTH}
         consumer:
           topic: ${KAFKA_TOPIC}
-          group: ccx-exporter
+          group: ${KAFKA_GROUP_ID}
       valkey:
         url: ${VALKEY_URL}
         ttl: 1440h
       s3:
-        bucket: ${S3_BUCKET}
-        baseEndpoint: ${S3_BASE_ENDPOINT}
         usePathStyle: ${S3_USE_PATH_STYLE}
+        keyPrefix: ccx-exporter/output/
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -127,37 +158,118 @@ objects:
         labels:
           app.kubernetes.io/name: ${DEPLOYMENT_NAME}
       spec:
+        initContainers:
+        - command:
+          - bash
+          - -c
+          - /tmp/scripts/configure_acl.sh
+          env:
+          - name: SKIP_ACL
+            value: ${SKIP_ACL}
+          - name: ADMIN_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: ${ADMIN_USERNAME_SECRETKEY}
+                name: ${ADMIN_USERNAME_SECRETNAME}
+          - name: ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: ${ADMIN_PASSWORD_SECRETKEY}
+                name: ${ADMIN_PASSWORD_SECRETNAME}
+          - name: KAFKA_GROUP_ID
+            value: ${KAFKA_GROUP_ID}
+          - name: KAFKA_TOPIC
+            value: ${KAFKA_TOPIC}
+          - name: ZOOKEEPER_TLS
+            value: ${ZOOKEEPER_TLS}
+          - name: ZOOKEEPER_CONNECT_STRING
+            valueFrom:
+              secretKeyRef:
+                name: ${ZOOKEEPER_CONNECT_STRING_SECRETNAME}
+                key: ${ZOOKEEPER_CONNECT_STRING_SECRETKEY}
+          - name: CCX_EXPORTER_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: ${KAFKA_USER_SECRETNAME}
+                key: ${KAFKA_USER_SECRETKEY}
+          image: ${KAFKA_IMAGE_NAME}:${KAFKA_IMAGE_TAG}
+          imagePullPolicy: Always
+          name: configure-acl
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+            requests:
+              cpu: 10m
+              memory: 256Mi
+          volumeMounts:
+          - mountPath: /tmp/scripts
+            name: scripts
         containers:
         - args:
           - process
           - --config
           - /etc/processing/config.yaml
           env:
-          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_ACCESSKEYID
+          # s3 bucket
+          - name: CCXEXPORTER_S3_BUCKET
             valueFrom:
               secretKeyRef:
-                name: ${DLQ_AWS_ACCESS_KEY_ID_SECRETNAME}
-                key: ${DLQ_AWS_ACCESS_KEY_ID_SECRETKEY}
-          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_SECRETACCESSKEY
+                name: ${S3_BUCKET_SECRETNAME}
+                key: bucket
+          - name: CCXEXPORTER_S3_BASEENDPOINT
             valueFrom:
               secretKeyRef:
-                name: ${DLQ_AWS_SECRET_ACCESS_KEY_SECRETNAME}
-                key: ${DLQ_AWS_SECRET_ACCESS_KEY_SECRETKEY}
+                name: ${S3_BUCKET_SECRETNAME}
+                key: endpoint
+          - name: CCXEXPORTER_S3_REGION
+            valueFrom:
+              secretKeyRef:
+                name: ${S3_BUCKET_SECRETNAME}
+                key: aws_region
           - name: CCXEXPORTER_S3_CREDS_ACCESSKEYID
             valueFrom:
               secretKeyRef:
-                name: ${AWS_ACCESS_KEY_ID_SECRETNAME}
-                key: ${AWS_ACCESS_KEY_ID_SECRETKEY}
+                name: ${S3_BUCKET_SECRETNAME}
+                key: aws_access_key_id
           - name: CCXEXPORTER_S3_CREDS_SECRETACCESSKEY
             valueFrom:
               secretKeyRef:
-                name: ${AWS_SECRET_ACCESS_KEY_SECRETNAME}
-                key: ${AWS_SECRET_ACCESS_KEY_SECRETKEY}
+                name: ${S3_BUCKET_SECRETNAME}
+                key: aws_secret_access_key
+          # dlq bucket
+          - name: CCXEXPORTER_DEADLETTERQUEUE_BUCKET
+            valueFrom:
+              secretKeyRef:
+                name: ${S3_DLQ_BUCKET_SECRETNAME}
+                key: bucket
+          - name: CCXEXPORTER_DEADLETTERQUEUE_BASEENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: ${S3_DLQ_BUCKET_SECRETNAME}
+                key: endpoint
+          - name: CCXEXPORTER_DEADLETTERQUEUE_REGION
+            valueFrom:
+              secretKeyRef:
+                name: ${S3_DLQ_BUCKET_SECRETNAME}
+                key: aws_region
+          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_ACCESSKEYID
+            valueFrom:
+              secretKeyRef:
+                name: ${S3_DLQ_BUCKET_SECRETNAME}
+                key: aws_access_key_id
+          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_SECRETACCESSKEY
+            valueFrom:
+              secretKeyRef:
+                name: ${S3_DLQ_BUCKET_SECRETNAME}
+                key: aws_secret_access_key
+          # valkey
           - name: CCXEXPORTER_VALKEY_CREDS_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: ${VALKEY_PASSWORD_SECRETNAME}
                 key: ${VALKEY_PASSWORD_SECRETKEY}
+          # kafka
           - name: CCXEXPORTER_KAFKA_BROKER_CREDS_USER
             valueFrom:
               secretKeyRef:
@@ -185,3 +297,7 @@ objects:
         - name: config
           configMap:
             name: ${DEPLOYMENT_NAME}
+        - name: scripts
+          configMap:
+            name: ccx-exporter-user-acl
+            defaultMode: 493

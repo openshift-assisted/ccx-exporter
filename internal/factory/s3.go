@@ -3,6 +3,7 @@ package factory
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -23,7 +24,13 @@ func CreateS3Client(ctx context.Context, conf config.S3) (*s3.Client, error) {
 	)
 
 	if conf.BaseEndpoint != "" {
-		awsConfig.BaseEndpoint = &conf.BaseEndpoint
+		baseEndpoint := conf.BaseEndpoint
+
+		if !strings.HasPrefix(baseEndpoint, "http://") && !strings.HasPrefix(baseEndpoint, "https://") {
+			baseEndpoint = fmt.Sprintf("https://%s", baseEndpoint)
+		}
+
+		awsConfig.BaseEndpoint = &baseEndpoint
 	}
 
 	if err != nil {

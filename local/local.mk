@@ -7,11 +7,11 @@ KUBE_WAIT         := $(KUBE_ENV) kubectl wait -n $(NAMESPACE) --timeout=120s --f
 
 LOGS_LEVEL := 10
 
-DEPLOYMENT_NAME := ccx-exporter
-VALKEY_URL      := valkey-ccx-exporter-0.valkey-ccx-exporter-headless:6379
-DQL_S3_BUCKET   := ccx-processing-dlq
-KAFKA_TOPIC     := assisted-service-events
-S3_BUCKET       := ccx-processing-result
+DEPLOYMENT_NAME          := ccx-exporter
+VALKEY_URL               := valkey-ccx-exporter-0.valkey-ccx-exporter-headless:6379
+S3_BUCKET_SECRETNAME     := ccx-processing-result
+S3_DLQ_BUCKET_SECRETNAME := ccx-processing-dlq
+KAFKA_TOPIC              := assisted-service-events
 
 .PHONY: local.kind
 ## local.kind: Start kind cluster
@@ -58,6 +58,12 @@ local.localstack: local.context
 	@helm repo add localstack https://localstack.github.io/helm-charts
 	@$(KUBE_ENV) helm install -n $(NAMESPACE) localstack localstack/localstack --set-string persistence.enabled=true
 
+## local.localstack.buckets: Create defaults buckets
+.PHONY: local.localstack.buckets
+local.localstack.buckets: local.kubeconfig
+	@$(KUBE_ENV) kubectl exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-result
+	@$(KUBE_ENV) kubectl exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-dlq
+
 .PHONY: local.delete
 ## local.delete: Stop kind server
 local.delete: local.context
@@ -92,10 +98,10 @@ local.processing: local.context
 		-p VALKEY_URL=$(VALKEY_URL) \
 		-p KAFKA_TOPIC=$(KAFKA_TOPIC) \
 		-p S3_USE_PATH_STYLE=true \
-		-p S3_BASE_ENDPOINT=http://localstack:4566 \
-		-p S3_BUCKET=$(S3_BUCKET) \
-		-p DQL_S3_BUCKET=$(DQL_S3_BUCKET) \
+		-p S3_BUCKET_SECRETNAME=$(S3_BUCKET_SECRETNAME) \
+		-p S3_DLQ_BUCKET_SECRETNAME=$(S3_DLQ_BUCKET_SECRETNAME) \
 		-p KAFKA_USE_SCRAM_AUTH=false \
+		-p SKIP_ACL=true \
 		> $(CURDIR)/local/template.yaml
 	@oc kustomize $(CURDIR)/local | oc apply -n $(NAMESPACE) -f -
 	@$(KUBE_WAIT) deployment/$(DEPLOYMENT_NAME)
