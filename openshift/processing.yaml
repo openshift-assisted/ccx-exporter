@@ -71,11 +71,11 @@ parameters:
   value: quay.io/strimzi/kafka
 - name: KAFKA_IMAGE_TAG
   value: latest-kafka-3.8.0
-- name: ADMIN_USER_SECRETNAME
+- name: KAFKA_ADMIN_USER_SECRETNAME
   value: kafka-admin-user
-- name: ADMIN_USERNAME_SECRETKEY
+- name: KAFKA_ADMIN_USERNAME_SECRETKEY
   value: username
-- name: ADMIN_PASSWORD_SECRETKEY
+- name: KAFKA_ADMIN_PASSWORD_SECRETKEY
   value: password
 - name: ZOOKEEPER_TLS
   value: "false"
@@ -164,13 +164,13 @@ objects:
           - name: ADMIN_USERNAME
             valueFrom:
               secretKeyRef:
-                name: ${ADMIN_USER_SECRETNAME}
-                key: ${ADMIN_USERNAME_SECRETKEY}
+                name: ${KAFKA_ADMIN_USER_SECRETNAME}
+                key: ${KAFKA_ADMIN_USERNAME_SECRETKEY}
           - name: ADMIN_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: ${ADMIN_USER_SECRETNAME}
-                key: ${ADMIN_PASSWORD_SECRETKEY}
+                name: ${KAFKA_ADMIN_USER_SECRETNAME}
+                key: ${KAFKA_ADMIN_PASSWORD_SECRETKEY}
           - name: KAFKA_GROUP_ID
             value: ${KAFKA_GROUP_ID}
           - name: KAFKA_TOPIC
