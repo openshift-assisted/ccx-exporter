@@ -6,8 +6,6 @@ metadata:
 parameters:
 - name: VALKEY_NAME
   value: valkey-ccx-exporter
-- name: NAMESPACE
-  value: ccx-exporter
 - name: VALKEY_IMAGE_NAME
   value: quay.io/sclorg/valkey-7-c10s
 - name: VALKEY_IMAGE_TAG
@@ -179,8 +177,6 @@ objects:
                   labelSelector:
                     matchLabels:
                       app.kubernetes.io/name: ccx-exporter
-                  namespaces:
-                    - "${NAMESPACE}"
                   topologyKey: kubernetes.io/hostname
                 weight: 1
         terminationGracePeriodSeconds: 30
