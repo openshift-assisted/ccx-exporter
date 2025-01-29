@@ -45,8 +45,10 @@ parameters:
   value: ccx-processing-dlq
 
 # Kafka
-- name: KAFKA_BROKERS
-  value: kraft-0.kraft:9092
+- name: KAFKA_URLS_SECRETNAME
+  value: kafka-urls
+- name: KAFKA_BOOTSTRAP_URL_SECRETKEY
+  value: bootstrap_brokers
 - name: KAFKA_VERSION
   value: "3.7.1"
 - name: KAFKA_TOPIC
@@ -83,8 +85,6 @@ parameters:
   value: "false"
 - name: ZOOKEEPER_CONNECT_STRING_SECRETKEY
   value: zookeeper_connect_string
-- name: ZOOKEEPER_CONNECT_STRING_SECRETNAME
-  value: kafka
 
 
 objects:
@@ -131,7 +131,6 @@ objects:
         keyPrefix: ccx-exporter/errors/
       kafka:
         broker:
-          urls: ${KAFKA_BROKERS}
           version: ${KAFKA_VERSION}
           creds:
             useSCRAMSHA512Auth: ${KAFKA_USE_SCRAM_AUTH}
@@ -185,7 +184,7 @@ objects:
           - name: ZOOKEEPER_CONNECT_STRING
             valueFrom:
               secretKeyRef:
-                name: ${ZOOKEEPER_CONNECT_STRING_SECRETNAME}
+                name: ${KAFKA_URLS_SECRETNAME}
                 key: ${ZOOKEEPER_CONNECT_STRING_SECRETKEY}
           - name: CCX_EXPORTER_USERNAME
             valueFrom:
@@ -270,6 +269,11 @@ objects:
                 name: ${VALKEY_PASSWORD_SECRETNAME}
                 key: ${VALKEY_PASSWORD_SECRETKEY}
           # kafka
+          - name: CCXEXPORTER_KAFKA_BROKER_URLS
+            valueFrom:
+              secretKeyRef:
+                name: ${KAFKA_URLS_SECRETNAME}
+                key: ${KAFKA_BOOTSTRAP_URL_SECRETKEY}
           - name: CCXEXPORTER_KAFKA_BROKER_CREDS_USER
             valueFrom:
               secretKeyRef:
