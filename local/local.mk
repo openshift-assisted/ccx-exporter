@@ -96,10 +96,10 @@ local.processing: local.context
 		-p LOGS_LEVEL="$(LOGS_LEVEL)" \
 		-p DEPLOYMENT_NAME=$(DEPLOYMENT_NAME) \
 		-p VALKEY_URL=$(VALKEY_URL) \
-		-p KAFKA_TOPIC=$(KAFKA_TOPIC) \
 		-p S3_USE_PATH_STYLE=true \
 		-p S3_BUCKET_SECRETNAME=$(S3_BUCKET_SECRETNAME) \
 		-p S3_DLQ_BUCKET_SECRETNAME=$(S3_DLQ_BUCKET_SECRETNAME) \
+		-p KAFKA_TOPIC=$(KAFKA_TOPIC) \
 		-p KAFKA_USE_SCRAM_AUTH=false \
 		-p SKIP_ACL=true \
 		> $(CURDIR)/local/template.yaml

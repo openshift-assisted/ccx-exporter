@@ -78,7 +78,7 @@ parameters:
 - name: KAFKA_ADMIN_PASSWORD_SECRETKEY
   value: password
 - name: ZOOKEEPER_TLS
-  value: "false"
+  value: "true"
 - name: ZOOKEEPER_CONNECT_STRING_SECRETKEY
   value: zookeeper_connect_string
 
