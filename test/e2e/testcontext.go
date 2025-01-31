@@ -103,7 +103,7 @@ func CreateTestContext(conf TestConfig, kubeConfigPath string) (TestContext, err
 
 	// Kafka client
 	saramaConfig := sarama.NewConfig()
-	saramaConfig.Version = sarama.V3_6_0_0
+	saramaConfig.Version = sarama.V3_7_1_0
 	saramaConfig.ClientID = conf.DeploymentName
 	saramaConfig.Producer.Return.Errors = true
 	saramaConfig.Producer.Return.Successes = true

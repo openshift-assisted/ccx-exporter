@@ -5,6 +5,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var kubeconfig string // path to kubeconfig file
@@ -36,4 +39,10 @@ func defaultKubeConfigFilePath() string {
 
 func TestMain(m *testing.M) {
 	os.Exit(m.Run())
+}
+
+// Go Test
+func TestCommon(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Common test suite")
 }

@@ -89,7 +89,7 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: ccx-exporter-user-acl
+    name: ${DEPLOYMENT_NAME}-user-acl
   data:
     zookeeper.config: |-
       zookeeper.ssl.client.enable=true
@@ -302,5 +302,5 @@ objects:
             name: ${DEPLOYMENT_NAME}
         - name: scripts
           configMap:
-            name: ccx-exporter-user-acl
+            name: ${DEPLOYMENT_NAME}-user-acl
             defaultMode: 493

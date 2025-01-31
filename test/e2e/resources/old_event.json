@@ -1,0 +1,25 @@
+{
+    "Name": "Event",
+    "Payload": {
+        "category": "user",
+        "cluster_id": "5acb2c29-96cb-4467-9e31-3e3ffeead249",
+        "event_time": "2024-10-27T00:55:37.940Z",
+        "host_id": "e626edb9-5936-4bcf-9d48-53821915a702",
+        "infra_env_id": "c676cb06-bde6-4d2d-9e32-273116230d9c",
+        "message": "Host test-infra-cluster-eea9194c-master-2: validation 'machine-cidr-defined' is now fixed",
+        "name": "host_validation_fixed",
+        "request_id": "8676034d-62e2-4727-aff1-cd29eda6b403",
+        "severity": "info"
+    },
+    "Metadata": {
+        "versions": {
+            "release_tag": "master",
+            "versions": {
+                "assisted-installer": "registry-proxy.engineering.redhat.com/rh-osbs/openshift4-assisted-installer-rhel8:latest",
+                "assisted-installer-controller": "registry-proxy.engineering.redhat.com/rh-osbs/openshift4-assisted-installer-reporter-rhel8:latest",
+                "assisted-installer-service": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-service-saas-main/assisted-service-saas-main:26185f109d225f98ad03afd7c90dc7419fb746e6",
+                "discovery-agent": "registry-proxy.engineering.redhat.com/rh-osbs/openshift4-assisted-installer-agent-rhel8:latest"
+            }
+        }
+    }
+}
