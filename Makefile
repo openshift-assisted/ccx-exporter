@@ -36,7 +36,7 @@ format:   format.imports format.code
 build:    build.docker
 generate: generate.mocks
 check:    check.licenses check.imports check.fmt check.lint check.mocks
-test:     test.e2e
+test:     test.coverage
 logs:     logs.kube
 local:    local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
 
@@ -152,7 +152,7 @@ check.mocks:
 
 COVERAGE_DIR=$(BUILD_DIR)/coverdata
 
-.PHONY: test.prepare test.e2e.fast test.e2e test.unit test.coverage
+.PHONY: test.prepare test.e2e.skip-build test.e2e test.unit test.coverage
 
 ## test.prepare: Create build/coverdata/ folder
 test.prepare:
@@ -160,12 +160,12 @@ test.prepare:
 	@rm -fr $(COVERAGE_DIR)/*
 	@chmod 777 $(COVERAGE_DIR)
 
-## test.e2e.fast: Run e2e test without rebuilding and reimporting the processing image
-test.e2e.fast:
-	@go test ./test/e2e/... -v -kubeconfig $(LOCAL_KUBE_CONFIG)
+## test.e2e.skip-build: Run e2e test without rebuilding and reimporting the processing image
+test.e2e.skip-build:
+	@ginkgo -p test ./test/e2e/... -v -kubeconfig $(LOCAL_KUBE_CONFIG)
 
 ## test.e2e: Run e2e test
-test.e2e: build.docker local.import test.e2e.fast
+test.e2e: build.docker local.import test.e2e.skip-build
 
 ## test.unit: Run unit tests
 test.unit:
