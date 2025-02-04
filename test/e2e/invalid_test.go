@@ -2,46 +2,14 @@ package e2e_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	promdto "github.com/prometheus/client_model/go"
-	"github.com/prometheus/common/expfmt"
 
 	"github.com/openshift-assisted/ccx-exporter/test/e2e"
 )
-
-// Helper
-
-const (
-	errorMetricFamily    = "error_processing_error_total"
-	lateDataMetricFamily = "main_late_data_total"
-)
-
-func getMetrics(metrics string, family string) (*promdto.MetricFamily, error) {
-	parser := expfmt.TextParser{}
-
-	metricFamilies, err := parser.TextToMetricFamilies(strings.NewReader(metrics))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse metrics: %w", err)
-	}
-
-	for _, metricFamily := range metricFamilies {
-		if metricFamily == nil || metricFamily.Name == nil {
-			continue
-		}
-
-		if *metricFamily.Name == family {
-			return metricFamily, nil
-		}
-	}
-
-	return nil, errors.New("not found")
-}
 
 // Test Case
 
@@ -98,13 +66,12 @@ var _ = Describe("Checking invalid data handling", func() {
 				metricResp, err := testContext.HttpGet(ctx, fmt.Sprintf("http://localhost:%d/metrics", metricsPort))
 				Expect(err).NotTo(HaveOccurred())
 
-				metricFamily, err := getMetrics(metricResp, errorMetricFamily)
+				metric, err := e2e.GetMetric(metricResp, e2e.ErrorMetricFamily)
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(metricFamily.Metric).To(HaveLen(1))
-				Expect(metricFamily.Metric[0].Counter).NotTo(BeNil())
-				Expect(metricFamily.Metric[0].Counter.Value).NotTo(BeNil())
-				Expect(*metricFamily.Metric[0].Counter.Value).To(BeEquivalentTo(1))
+				Expect(metric.Counter).NotTo(BeNil())
+				Expect(metric.Counter.Value).NotTo(BeNil())
+				Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
 	})
@@ -143,13 +110,12 @@ var _ = Describe("Checking invalid data handling", func() {
 				metricResp, err := testContext.HttpGet(ctx, fmt.Sprintf("http://localhost:%d/metrics", metricsPort))
 				Expect(err).NotTo(HaveOccurred())
 
-				metricFamily, err := getMetrics(metricResp, errorMetricFamily)
+				metric, err := e2e.GetMetric(metricResp, e2e.ErrorMetricFamily)
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(metricFamily.Metric).To(HaveLen(1))
-				Expect(metricFamily.Metric[0].Counter).NotTo(BeNil())
-				Expect(metricFamily.Metric[0].Counter.Value).NotTo(BeNil())
-				Expect(*metricFamily.Metric[0].Counter.Value).To(BeEquivalentTo(1))
+				Expect(metric.Counter).NotTo(BeNil())
+				Expect(metric.Counter.Value).NotTo(BeNil())
+				Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
 	})

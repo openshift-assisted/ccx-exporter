@@ -2,17 +2,21 @@ package e2e
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	promdto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/common/expfmt"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -545,4 +549,63 @@ func (tc TestContext) HttpGet(ctx context.Context, url string) (string, error) {
 	}
 
 	return string(ret), nil
+}
+
+// Metrics
+
+const (
+	ErrorMetricFamily    = "error_processing_error_total"
+	LateDataMetricFamily = "main_late_data_total"
+)
+
+type KeyValue struct {
+	Key   string
+	Value string
+}
+
+func GetMetric(metrics string, family string, labels ...KeyValue) (*promdto.Metric, error) {
+	parser := expfmt.TextParser{}
+
+	metricFamilies, err := parser.TextToMetricFamilies(strings.NewReader(metrics))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse metrics: %w", err)
+	}
+
+	for _, metricFamily := range metricFamilies {
+		if metricFamily == nil || metricFamily.Name == nil || len(metricFamily.Metric) == 0 {
+			continue
+		}
+
+		if *metricFamily.Name != family {
+			continue
+		}
+
+		for _, metric := range metricFamily.Metric {
+			if metricHasAllLabels(metric, labels...) {
+				return metric, nil
+			}
+		}
+	}
+
+	return nil, errors.New("not found")
+}
+
+func metricHasAllLabels(metric *promdto.Metric, filters ...KeyValue) bool {
+	for _, filter := range filters {
+		if !metricHasLabel(metric, filter) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func metricHasLabel(metric *promdto.Metric, filter KeyValue) bool {
+	for _, label := range metric.Label {
+		if label.GetName() == filter.Key && label.GetValue() == filter.Value {
+			return true
+		}
+	}
+
+	return false
 }

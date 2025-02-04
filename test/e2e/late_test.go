@@ -67,16 +67,13 @@ var _ = Describe("Checking late data handling", func() {
 				metricResp, err := testContext.HttpGet(ctx, fmt.Sprintf("http://localhost:%d/metrics", metricsPort))
 				Expect(err).NotTo(HaveOccurred())
 
-				metricFamily, err := getMetrics(metricResp, lateDataMetricFamily)
+				//event_day="2024-10-27",name="Event"
+				metric, err := e2e.GetMetric(metricResp, e2e.LateDataMetricFamily, e2e.KeyValue{Key: "event_day", Value: "2024-10-27"}, e2e.KeyValue{Key: "name", Value: "Event"})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(metricFamily.Metric).To(HaveLen(1))
-
-				Expect(metricFamily.Metric[0].Label).To(HaveLen(2))
-
-				Expect(metricFamily.Metric[0].Counter).NotTo(BeNil())
-				Expect(metricFamily.Metric[0].Counter.Value).NotTo(BeNil())
-				Expect(*metricFamily.Metric[0].Counter.Value).To(BeEquivalentTo(1))
+				Expect(metric.Counter).NotTo(BeNil())
+				Expect(metric.Counter.Value).NotTo(BeNil())
+				Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
 	})
