@@ -8,10 +8,10 @@ KAFKA_TOPIC              := assisted-service-events
 CLUSTER_NAME      := ccx-exporter
 LOCAL_KUBE_CONFIG := $(BUILD_DIR)/kubeconfig
 DEPLOYMENT_DIR    := $(BUILD_DIR)/$(DEPLOYMENT_NAME)
-KUBECTL           := kubectl --kubeconfig=$(LOCAL_KUBE_CONFIG)
-OC                := oc --kubeconfig=$(LOCAL_KUBE_CONFIG)
-HELM              := helm --kubeconfig=$(LOCAL_KUBE_CONFIG)
-KUBE_WAIT         := $(KUBECTL) wait -n $(NAMESPACE) --timeout=120s --for=jsonpath='{.status.readyReplicas}'=1
+KUBECTL           := kubectl --kubeconfig=$(LOCAL_KUBE_CONFIG) -n $(NAMESPACE)
+OC                := oc --kubeconfig=$(LOCAL_KUBE_CONFIG) -n $(NAMESPACE)
+HELM              := helm --kubeconfig=$(LOCAL_KUBE_CONFIG) -n $(NAMESPACE)
+KUBE_WAIT         := $(KUBECTL) wait --timeout=120s --for=jsonpath='{.status.readyReplicas}'=1
 
 LOGS_LEVEL := 10
 
@@ -32,28 +32,28 @@ local.namespace: local.kubeconfig
 .PHONY: local.kraft
 ## local.kraft: Start kraft (kafka w/o zookeeper) exposed on 32323
 local.kraft: local.kubeconfig
-	@$(KUBECTL) apply -n $(NAMESPACE) -f $(CURDIR)/local/kraft.yaml
+	@$(KUBECTL) apply -f $(CURDIR)/local/kraft.yaml
 
 .PHONY: local.valkey
 ## local.valkey: Start valkey exposed on 30379
 local.valkey: local.kubeconfig
-	@$(KUBECTL) apply -n $(NAMESPACE) -f $(CURDIR)/local/valkey-custo.yaml
-	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local | $(OC) apply -n $(NAMESPACE) -f -
+	@$(KUBECTL) apply -f $(CURDIR)/local/valkey-custo.yaml
+	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local | $(OC) apply -f -
 
 .PHONY: local.valkey.e2e
 local.valkey.e2e: local.kubeconfig
-	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local -p VALKEY_NAME=$(VALKEY_NAME) | $(OC) apply -n $(NAMESPACE) -f -
+	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local -p VALKEY_NAME=$(VALKEY_NAME) | $(OC) apply -f -
 	@$(KUBE_WAIT) sts/$(VALKEY_NAME)
 
 .PHONY: local.delete.valkey.e2e
 local.delete.valkey.e2e: local.kubeconfig
-	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local -p VALKEY_NAME=$(VALKEY_NAME) | $(OC) delete -n $(NAMESPACE) -f -
+	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local -p VALKEY_NAME=$(VALKEY_NAME) | $(OC) delete -f -
 
 ## local.localstack: Start s3 localstack exposed on 31566
 .PHONY: local.localstack
 local.localstack: local.kubeconfig
 	@$(HELM) repo add localstack https://localstack.github.io/helm-charts
-	@$(HELM) install -n $(NAMESPACE) localstack localstack/localstack --set-string persistence.enabled=true
+	@$(HELM) install localstack localstack/localstack --set-string persistence.enabled=true
 
 ## local.localstack.buckets: Create defaults buckets
 .PHONY: local.localstack.buckets
