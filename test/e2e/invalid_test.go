@@ -66,7 +66,7 @@ var _ = Describe("Checking invalid data handling", func() {
 				metricResp, err := testContext.HttpGet(ctx, fmt.Sprintf("http://localhost:%d/metrics", metricsPort))
 				Expect(err).NotTo(HaveOccurred())
 
-				metric, err := e2e.GetMetric(metricResp, e2e.ErrorMetricFamily)
+				metric, err := e2e.GetMetric(metricResp, e2e.ErrorMetricFamily, e2e.KeyValue{Key: "category", Value: "unmarshal"})
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(metric.Counter).NotTo(BeNil())
@@ -110,7 +110,7 @@ var _ = Describe("Checking invalid data handling", func() {
 				metricResp, err := testContext.HttpGet(ctx, fmt.Sprintf("http://localhost:%d/metrics", metricsPort))
 				Expect(err).NotTo(HaveOccurred())
 
-				metric, err := e2e.GetMetric(metricResp, e2e.ErrorMetricFamily)
+				metric, err := e2e.GetMetric(metricResp, e2e.ErrorMetricFamily, e2e.KeyValue{Key: "category", Value: "unknown_name"})
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(metric.Counter).NotTo(BeNil())

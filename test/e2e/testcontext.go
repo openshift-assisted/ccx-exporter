@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -587,7 +586,7 @@ func GetMetric(metrics string, family string, labels ...KeyValue) (*promdto.Metr
 		}
 	}
 
-	return nil, errors.New("not found")
+	return nil, fmt.Errorf("metric %s %+v not found", family, labels)
 }
 
 func metricHasAllLabels(metric *promdto.Metric, filters ...KeyValue) bool {
