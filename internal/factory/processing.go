@@ -20,12 +20,12 @@ func DecorateProcessing(mainProcessing pipeline.Processing[entity.Event], regist
 	ret := mainProcessing
 
 	ret = pipeline.NewRetryProcessing(ret, pipeline.RetryConfig{})
-	ret, err := pipeline.NewDurationMetricsDecoratorProcessing(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "main"})
+	ret, err := pipeline.NewDurationMetricsDecoratorProcessing(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "processing"})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create duration metrics processor: %w", err)
 	}
 
-	ret, err = processing.NewCountLateData(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "main"})
+	ret, err = processing.NewCountLateData(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "processing"})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create count late event metrics processor: %w", err)
 	}

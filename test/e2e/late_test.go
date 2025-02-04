@@ -2,7 +2,6 @@ package e2e_test
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -32,25 +31,22 @@ var _ = Describe("Checking late data handling", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	When("pushing event data from 2024-10-27", func() {
-		var metricsPort uint16
-		var stopMetricsPortForward chan struct{}
+	AfterEach(func() {
+		// Keep all components if the test failed
+		if CurrentSpecReport().Failed() {
+			GinkgoLogr.Info("Test failed", "config", testConfig)
 
+			return
+		}
+
+		err := testContext.Shutdown(ctx)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	When("pushing event data from 2024-10-27", func() {
 		BeforeEach(func() {
 			err := testContext.PushFile(ctx, "resources/old_event.json")
 			Expect(err).NotTo(HaveOccurred())
-
-			port, stopPortForward, err := testContext.PortForwardProcessingMetrics(context.TODO())
-			Expect(err).NotTo(HaveOccurred())
-
-			metricsPort = port
-			stopMetricsPortForward = stopPortForward
-		})
-
-		AfterEach(func() {
-			if stopMetricsPortForward != nil {
-				close(stopMetricsPortForward)
-			}
 		})
 
 		It("should succeed but report late data", func(ctx SpecContext) {
@@ -64,11 +60,7 @@ var _ = Describe("Checking late data handling", func() {
 
 			By("eventually increments the late metrics")
 			Eventually(func(g Gomega, ctx context.Context) {
-				metricResp, err := testContext.HttpGet(ctx, fmt.Sprintf("http://localhost:%d/metrics", metricsPort))
-				Expect(err).NotTo(HaveOccurred())
-
-				//event_day="2024-10-27",name="Event"
-				metric, err := e2e.GetMetric(metricResp, e2e.LateDataMetricFamily, e2e.KeyValue{Key: "event_day", Value: "2024-10-27"}, e2e.KeyValue{Key: "name", Value: "Event"})
+				metric, err := testContext.GetMetric(ctx, e2e.LateDataMetricFamily, e2e.KeyValue{Key: "event_day", Value: "2024-10-27"}, e2e.KeyValue{Key: "name", Value: "Event"})
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(metric.Counter).NotTo(BeNil())
@@ -76,17 +68,5 @@ var _ = Describe("Checking late data handling", func() {
 				Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
-	})
-
-	AfterEach(func() {
-		// Keep all components if the test failed
-		if CurrentSpecReport().Failed() {
-			GinkgoLogr.Info("Test failed", "config", testConfig)
-
-			return
-		}
-
-		err := testContext.Shutdown(ctx)
-		Expect(err).NotTo(HaveOccurred())
 	})
 })

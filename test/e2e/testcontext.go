@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -55,6 +54,9 @@ type TestContext struct {
 
 	kubeConfig *rest.Config
 	kubeClient *kubernetes.Clientset
+
+	metricPort       uint16
+	closePortForward chan struct{}
 }
 
 var random *rand.Rand
@@ -151,7 +153,7 @@ func CreateTestContext(conf TestConfig, kubeConfigPath string) (TestContext, err
 
 // Generic func
 
-func (tc TestContext) DeployAll(ctx context.Context) error {
+func (tc *TestContext) DeployAll(ctx context.Context) error {
 	err := tc.DeployValkey(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to deploy valkey: %w", err)
@@ -167,6 +169,14 @@ func (tc TestContext) DeployAll(ctx context.Context) error {
 		return fmt.Errorf("failed to deploy processing: %w", err)
 	}
 
+	port, ch, err := tc.PortForwardProcessingMetrics(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to port forward metric port: %w", err)
+	}
+
+	tc.metricPort = port
+	tc.closePortForward = ch
+
 	return nil
 }
 
@@ -175,6 +185,11 @@ func (tc TestContext) Shutdown(ctx context.Context) error {
 	err := tc.Close(ctx)
 	if err != nil {
 		return err
+	}
+
+	// Stop port forward
+	if tc.closePortForward != nil {
+		close(tc.closePortForward)
 	}
 
 	// Then delete extra resources
@@ -529,32 +544,25 @@ func (tc TestContext) PortForwardProcessingMetrics(ctx context.Context) (uint16,
 
 // HTTP func
 
-func (tc TestContext) HttpGet(ctx context.Context, url string) (string, error) {
+func (tc TestContext) HttpGet(ctx context.Context, url string) (io.ReadCloser, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("request failed: %w", err)
+		return nil, fmt.Errorf("request failed: %w", err)
 	}
 
-	defer resp.Body.Close()
-
-	ret, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response: %w", err)
-	}
-
-	return string(ret), nil
+	return resp.Body, nil
 }
 
 // Metrics
 
 const (
 	ErrorMetricFamily    = "error_processing_error_total"
-	LateDataMetricFamily = "main_late_data_total"
+	LateDataMetricFamily = "processing_late_data_total"
 )
 
 type KeyValue struct {
@@ -562,10 +570,17 @@ type KeyValue struct {
 	Value string
 }
 
-func GetMetric(metrics string, family string, labels ...KeyValue) (*promdto.Metric, error) {
+func (tc TestContext) GetMetric(ctx context.Context, family string, labels ...KeyValue) (*promdto.Metric, error) {
+	metricsResp, err := tc.HttpGet(ctx, fmt.Sprintf("http://localhost:%d/metrics", tc.metricPort))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get metrics: %w", err)
+	}
+
+	defer metricsResp.Close()
+
 	parser := expfmt.TextParser{}
 
-	metricFamilies, err := parser.TextToMetricFamilies(strings.NewReader(metrics))
+	metricFamilies, err := parser.TextToMetricFamilies(metricsResp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse metrics: %w", err)
 	}
