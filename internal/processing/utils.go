@@ -106,28 +106,22 @@ func HashValue(payload map[string]interface{}, key string) (string, error) {
 		return "", fmt.Errorf("failed to extract string: %w", err)
 	}
 
-	hash := md5.New()
-
-	_, err = hash.Write([]byte(value))
-	if err != nil {
-		return "", fmt.Errorf("failed to hash value: %w", err)
-	}
-
-	hashBytes := hash.Sum(nil)
-	ret := hex.EncodeToString(hashBytes[:])
-
-	return ret, nil
+	return hash([]byte(value))
 }
 
 func HashPayload(payload map[string]interface{}) (string, error) {
-	hash := md5.New()
-
 	payloadStr, err := json.Marshal(payload)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
-	_, err = hash.Write([]byte(payloadStr))
+	return hash(payloadStr)
+}
+
+func hash(value []byte) (string, error) {
+	hash := md5.New()
+
+	_, err := hash.Write(value)
 	if err != nil {
 		return "", fmt.Errorf("failed to hash value: %w", err)
 	}
