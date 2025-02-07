@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -33,6 +34,14 @@ const (
 	maxSizeName = 12
 
 	namespace = "ccx-exporter"
+)
+
+type EventType string
+
+const (
+	EventTypeEvents    EventType = ".events"
+	EventTypeClusters  EventType = ".clusters"
+	EventTypeInfraEnvs EventType = ".infra_envs"
 )
 
 type TestConfig struct {
@@ -379,6 +388,38 @@ func (tc TestContext) PushFile(ctx context.Context, path string) error {
 	return nil
 }
 
+func (tc TestContext) UpdateDateAndPush(ctx context.Context, path string) error {
+	updatedPayload, err := ReadAndUpdateDate(ctx, path)
+	if err != nil {
+		return fmt.Errorf("failed to read & update file: %w", err)
+	}
+
+	_, _, err = tc.kafkaProducer.SendMessage(&sarama.ProducerMessage{
+		Topic: tc.Config.KafkaTopic,
+		Value: sarama.ByteEncoder(updatedPayload),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to push msg: %w", err)
+	}
+
+	return nil
+}
+
+// Template
+func ReadAndUpdateDate(ctx context.Context, path string) ([]byte, error) {
+	payload, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	now := time.Now()
+	nowStr := fmt.Sprintf("%04d-%02d-%02dT00:00:00.000Z", now.Year(), now.Month(), now.Day())
+
+	ret := strings.ReplaceAll(string(payload), "CURRENT_DATE_PLACEHOLDER", nowStr)
+
+	return []byte(ret), nil
+}
+
 // S3 func
 
 func (tc TestContext) CreateS3Buckets(ctx context.Context) error {
@@ -451,6 +492,33 @@ func (tc TestContext) deleteS3Bucket(_ context.Context, bucket string) error {
 	}
 
 	return nil
+}
+
+func S3Path(eventType EventType, date time.Time) string {
+	return fmt.Sprintf(
+		"ccx-exporter/output/%s/%04d-%02d-%02d/",
+		eventType,
+		date.Year(), date.Month(), date.Day(),
+	)
+}
+
+func (tc TestContext) GetS3Object(ctx context.Context, key string) ([]byte, error) {
+	obj, err := tc.s3Client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: &tc.Config.OutputS3Bucket,
+		Key:    &key,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object %s: %w", key, err)
+	}
+
+	defer obj.Body.Close()
+
+	ret, err := io.ReadAll(obj.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read object %s: %w", key, err)
+	}
+
+	return ret, nil
 }
 
 // Kube func
@@ -561,8 +629,9 @@ func (tc TestContext) HttpGet(ctx context.Context, url string) (io.ReadCloser, e
 // Metrics
 
 const (
-	ErrorMetricFamily    = "error_processing_error_total"
-	LateDataMetricFamily = "processing_late_data_total"
+	ErrorMetricFamily     = "error_processing_error_total"
+	LateDataMetricFamily  = "processing_late_data_total"
+	DataCountMetricFamily = "processing_data_total"
 )
 
 type KeyValue struct {
