@@ -1,0 +1,23 @@
+{
+    "Name": "Event",
+    "Payload": {
+        "category": "user",
+        "cluster_id": "4b50c364-007e-4e2c-88a8-a86441900931",
+        "event_time": "CURRENT_DATE_PLACEHOLDER",
+        "message": "Updated finalizing stage of the cluster to 'Done'",
+        "name": "cluster_finalizing_stage_updated",
+        "request_id": "7f866e76-f5c5-4ec1-b8fc-ec8c0d4a4dff",
+        "severity": "info"
+    },
+    "Metadata": {
+        "versions": {
+            "release_tag": "master",
+            "versions": {
+                "assisted-installer": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-ds-main:latest",
+                "assisted-installer-controller": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-controller-ds-main:latest",
+                "assisted-installer-service": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-service-saas-main/assisted-service-saas-main:456b638972b2c03ea20fe371029786acddaca5df",
+                "discovery-agent": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-agent-ds-main:latest"
+            }
+        }
+    }
+}

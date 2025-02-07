@@ -1,0 +1,10 @@
+{
+    "category": "user",
+    "cluster_id": "4b50c364-007e-4e2c-88a8-a86441900931",
+    "event_time": "CURRENT_DATE_PLACEHOLDER",
+    "message": "Updated finalizing stage of the cluster to 'Done'",
+    "name": "cluster_finalizing_stage_updated",
+    "severity": "info",
+    "event_id": "e228da2ab3c44e20203b7bb4a2c0a612",
+    "request_id": "7f866e76-f5c5-4ec1-b8fc-ec8c0d4a4dff"
+}
