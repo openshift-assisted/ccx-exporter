@@ -52,7 +52,7 @@ func (p CountLateData) Process(ctx context.Context, event entity.Event) error {
 
 	eventTime, err := ExtractEventTime(event)
 	if err != nil {
-		log.Logger().Error(err, "Failed to extract time")
+		log.Logger().Error(err, "Failed to extract time to count late data")
 
 		return nil // Not a processing error
 	}

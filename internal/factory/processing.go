@@ -14,20 +14,27 @@ import (
 /*
  * DecorateProcessing decorates the processing as follow:
  *
- * panic --> count late data --> duration --> retry --> main (anonymize + ... + s3)
+ * panic --> count data --> count late data --> duration --> retry --> main (anonymize + ... + s3)
  */
 func DecorateProcessing(mainProcessing pipeline.Processing[entity.Event], registry prometheus.Registerer) (pipeline.Processing[entity.Event], error) {
 	ret := mainProcessing
 
+	metricsConfig := pipeline.MetricsConfig{Namespace: "processing"}
+
 	ret = pipeline.NewRetryProcessing(ret, pipeline.RetryConfig{})
-	ret, err := pipeline.NewDurationMetricsDecoratorProcessing(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "processing"})
+	ret, err := pipeline.NewDurationMetricsDecoratorProcessing(ret, registry, clockwork.NewRealClock(), metricsConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create duration metrics processor: %w", err)
 	}
 
-	ret, err = processing.NewCountLateData(ret, registry, clockwork.NewRealClock(), pipeline.MetricsConfig{Namespace: "processing"})
+	ret, err = processing.NewCountLateData(ret, registry, clockwork.NewRealClock(), metricsConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create count late event metrics processor: %w", err)
+	}
+
+	ret, err = processing.NewCountData(ret, registry, metricsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create count event metrics processor: %w", err)
 	}
 
 	ret = pipeline.NewPanicHandlerProcessing(ret)
