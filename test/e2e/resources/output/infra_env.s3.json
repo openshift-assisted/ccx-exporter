@@ -1,0 +1,22 @@
+{
+    "cluster_id": "4b50c364-007e-4e2c-88a8-a86441900931",
+    "cpu_architecture": "x86_64",
+    "created_at": "2025-02-03T20:35:27.639611Z",
+    "download_url": "https://api.integration.openshift.com/api/assisted-images/bytoken/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Mzg2MjkzMjcsInN1YiI6IjFiNWFiYjIzLWI5YjUtNDdkYi05ZWVhLWZiOTQ1MzA0YjJjYSJ9.l1szAf2Kdp5o_3ez5etuz01Q2i7gTf3e9lsOZ-HFYl8/4.18/x86_64/full.iso",
+    "email_domain": "redhat.com",
+    "expires_at": "2025-02-04T00:35:27.000Z",
+    "href": "/api/assisted-install/v2/infra-envs/1b5abb23-b9b5-47db-9eea-fb945304b2ca",
+    "id": "1b5abb23-b9b5-47db-9eea-fb945304b2ca",
+    "infraenv_state_id": "6ac431a9973d2f1294e259389e074973",
+    "kind": "InfraEnv",
+    "name": "test-infra-infra-env-93427d07",
+    "openshift_version": "4.18",
+    "org_id": "7199842",
+    "proxy": {},
+    "pull_secret_set": true,
+    "ssh_authorized_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDO2W6UGAX++0ERBbaa7PKULMRxH+dNSG+zOzBnW2iWdmdEPoRtEhFXEiEivyPsuieKIoF4Jc9qYl40jULmNmzt/abqKo3I7r48P7mBU1gbbVyJOwvf7D2GPTcGcK3q7PzEkcUdnBJx77xopxGxjjOSOAhEKJpVoAIgU0eEDaZU3skFM77TOpHGopdWkR9XjQEdlJ1/in2FoK5pHo4yrk1F1CU1dGQCmnBaChiH2yGZ2LIp7jRTRxBeHoVduqoX7fzpBiihZvmwEJy62rsPAabS5MMwIzJ2d0yzT7F8uq2bQKvehAkrY8xMVLU4pPm34xnH1GENMRSBzudbjYYXejBt",
+    "static_network_config": "[{\"mac_interface_map\":[{\"logical_nic_name\":\"eth0\",\"mac_address\":\"02:00:00:44:a5:02\"},{\"logical_nic_name\":\"eth1\",\"mac_address\":\"02:00:00:2f:64:2c\"}],\"network_yaml\":\"dns-resolver:\\n  config:\\n    server:\\n    - 192.168.127.1\\ninterfaces:\\n- ipv4:\\n    address:\\n    - ip: 192.168.127.30\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth0\\n  state: up\\n  type: ethernet\\n- ipv4:\\n    address:\\n    - ip: 192.168.145.30\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth1\\n  state: up\\n  type: ethernet\\nroutes:\\n  config:\\n  - destination: 0.0.0.0/0\\n    next-hop-address: 192.168.127.1\\n    next-hop-interface: eth0\\n    table-id: 254\\n\"},{\"mac_interface_map\":[{\"logical_nic_name\":\"eth0\",\"mac_address\":\"02:00:00:2f:c0:43\"},{\"logical_nic_name\":\"eth1\",\"mac_address\":\"02:00:00:b7:b1:9b\"}],\"network_yaml\":\"dns-resolver:\\n  config:\\n    server:\\n    - 192.168.127.1\\ninterfaces:\\n- ipv4:\\n    address:\\n    - ip: 192.168.127.31\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth0\\n  state: up\\n  type: ethernet\\n- ipv4:\\n    address:\\n    - ip: 192.168.145.31\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth1\\n  state: up\\n  type: ethernet\\nroutes:\\n  config:\\n  - destination: 0.0.0.0/0\\n    next-hop-address: 192.168.127.1\\n    next-hop-interface: eth0\\n    table-id: 254\\n\"},{\"mac_interface_map\":[{\"logical_nic_name\":\"eth0\",\"mac_address\":\"02:00:00:53:64:82\"},{\"logical_nic_name\":\"eth1\",\"mac_address\":\"02:00:00:b8:c8:a5\"}],\"network_yaml\":\"dns-resolver:\\n  config:\\n    server:\\n    - 192.168.127.1\\ninterfaces:\\n- ipv4:\\n    address:\\n    - ip: 192.168.127.32\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth0\\n  state: up\\n  type: ethernet\\n- ipv4:\\n    address:\\n    - ip: 192.168.145.32\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth1\\n  state: up\\n  type: ethernet\\nroutes:\\n  config:\\n  - destination: 0.0.0.0/0\\n    next-hop-address: 192.168.127.1\\n    next-hop-interface: eth0\\n    table-id: 254\\n\"},{\"mac_interface_map\":[{\"logical_nic_name\":\"eth0\",\"mac_address\":\"02:00:00:fe:01:81\"},{\"logical_nic_name\":\"eth1\",\"mac_address\":\"02:00:00:93:f5:b9\"}],\"network_yaml\":\"dns-resolver:\\n  config:\\n    server:\\n    - 192.168.127.1\\ninterfaces:\\n- ipv4:\\n    address:\\n    - ip: 192.168.127.33\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth0\\n  state: up\\n  type: ethernet\\n- ipv4:\\n    address:\\n    - ip: 192.168.145.33\\n      prefix-length: 24\\n    dhcp: false\\n    enabled: true\\n  name: eth1\\n  state: up\\n  type: ethernet\\nroutes:\\n  config:\\n  - destination: 0.0.0.0/0\\n    next-hop-address: 192.168.127.1\\n    next-hop-interface: eth0\\n    table-id: 254\\n\"}]",
+    "type": "full-iso",
+    "updated_at": "CURRENT_DATE_PLACEHOLDER",
+    "user_id": "2ae66f90b7788ab8950e8f81b829c947"
+}
