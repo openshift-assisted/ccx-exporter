@@ -2,10 +2,12 @@ package processing
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
+	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
 )
 
 const categoryErrInvalidHostEvent = "invalid_host_event"
@@ -33,11 +35,17 @@ func (m Main) processHostState(ctx context.Context, event entity.Event) error {
 	payload["user_id"] = hashedUser
 	delete(payload, "user_name")
 
-	// Rename inventory -> host_inventory
-	inventory := payload["inventory"]
+	// Rename & "jsonify" inventory -> host_inventory
+	inventory, err := computeHostInventory(payload["inventory"])
+	if err != nil {
+		return err
+	}
 
 	payload["host_inventory"] = inventory
 	delete(payload, "inventory")
+
+	// Drop free_addresses (not push by scraper and quite big for not that much value)
+	delete(payload, "free_addresses")
 
 	// Create HostState
 	hostState := entity.HostState{
@@ -54,4 +62,42 @@ func (m Main) processHostState(ctx context.Context, event entity.Event) error {
 	}
 
 	return nil
+}
+
+func computeHostInventory(input interface{}) (interface{}, error) {
+	if input == nil {
+		return nil, nil
+	}
+
+	inventory, err := castInventory(input)
+	if err != nil {
+		return nil, err
+	}
+
+	if inventory == nil {
+		return nil, nil
+	}
+
+	ret := make(map[string]interface{})
+
+	err = json.Unmarshal(inventory, &ret)
+	if err != nil {
+		return nil, common.NewErrProcessingError(err, categoryErrInvalidHostEvent, nil, "failed to unmarshal inventory")
+	}
+
+	return ret, nil
+}
+
+func castInventory(inventory interface{}) ([]byte, error) {
+	inventoryStr, ok := inventory.(string)
+	if ok {
+		return []byte(inventoryStr), nil
+	}
+
+	inventoryByteA, ok := inventory.([]byte)
+	if ok {
+		return inventoryByteA, nil
+	}
+
+	return nil, pipeline.NewErrProcessingError(fmt.Errorf("unexpected type for inventory"), categoryErrInvalidHostEvent, nil)
 }
