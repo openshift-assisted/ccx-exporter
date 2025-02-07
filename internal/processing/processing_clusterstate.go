@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
@@ -18,6 +19,8 @@ const (
 )
 
 func (m Main) processClusterState(ctx context.Context, event entity.Event) error {
+	payload := CopyPayload(event.Payload)
+
 	// Extract clusterID
 	clusterID, err := ExtractString(event.Payload, "id")
 	if err != nil {
@@ -25,13 +28,22 @@ func (m Main) processClusterState(ctx context.Context, event entity.Event) error
 	}
 
 	// Get HostState for cluster
+	// Sorted by host id to have a deterministic cluster_state_id
 	hostStates, err := m.hostRepo.GetHostStates(ctx, clusterID)
 	if err != nil {
 		return fmt.Errorf("failed to get host states: %w", err)
 	}
 
-	payload := CopyPayload(event.Payload)
-	payload["hosts"] = hostStates
+	sort.Slice(hostStates, func(i, j int) bool {
+		return hostStates[i].HostID < hostStates[j].HostID
+	})
+
+	hosts := make([]interface{}, 0, len(hostStates))
+	for _, hs := range hostStates {
+		hosts = append(hosts, hs.Payload)
+	}
+
+	payload["hosts"] = hosts
 
 	// Check Mandatory fields (created_at, updated_at, email_domain)
 	_, err = ExtractString(event.Payload, "created_at")
