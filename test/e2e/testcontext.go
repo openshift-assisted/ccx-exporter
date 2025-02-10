@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -56,13 +55,13 @@ type TestConfig struct {
 type TestContext struct {
 	Config TestConfig
 
-	s3Client *s3.Client
+	S3Client *s3.Client
 
-	kafkaProducer sarama.SyncProducer
-	kafkaAdmin    sarama.ClusterAdmin
+	KafkaProducer sarama.SyncProducer
+	KafkaAdmin    sarama.ClusterAdmin
 
+	KubeClient *kubernetes.Clientset
 	kubeConfig *rest.Config
-	kubeClient *kubernetes.Clientset
 
 	metricPort       uint16
 	closePortForward chan struct{}
@@ -113,7 +112,7 @@ func CreateTestContext(conf TestConfig, kubeConfigPath string) (TestContext, err
 		o.UsePathStyle = true
 	})
 
-	ret.s3Client = s3Client
+	ret.S3Client = s3Client
 
 	// Kafka client
 	saramaConfig := sarama.NewConfig()
@@ -133,14 +132,14 @@ func CreateTestContext(conf TestConfig, kubeConfigPath string) (TestContext, err
 		return ret, fmt.Errorf("failed to create kafka producer: %w", err)
 	}
 
-	ret.kafkaProducer = kp
+	ret.KafkaProducer = kp
 
 	ka, err := sarama.NewClusterAdminFromClient(kc)
 	if err != nil {
 		return ret, fmt.Errorf("failed to create kafka admin: %w", err)
 	}
 
-	ret.kafkaAdmin = ka
+	ret.KafkaAdmin = ka
 
 	// Kube client
 	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
@@ -155,7 +154,7 @@ func CreateTestContext(conf TestConfig, kubeConfigPath string) (TestContext, err
 		return ret, fmt.Errorf("failed to create kubernetes clientset: %w", err)
 	}
 
-	ret.kubeClient = kubeClient
+	ret.KubeClient = kubeClient
 
 	return ret, nil
 }
@@ -230,12 +229,12 @@ func (tc TestContext) DeleteAll(ctx context.Context) error {
 }
 
 func (tc TestContext) Close(ctx context.Context) error {
-	err := tc.kafkaProducer.Close()
+	err := tc.KafkaProducer.Close()
 	if err != nil {
 		return fmt.Errorf("failed to close kafka producer: %w", err)
 	}
 
-	err = tc.kafkaAdmin.Close()
+	err = tc.KafkaAdmin.Close()
 	if err != nil {
 		return fmt.Errorf("failed to close kafka admin: %w", err)
 	}
@@ -288,12 +287,12 @@ func (tc TestContext) DeleteProcessing(ctx context.Context) error {
 }
 
 func (tc TestContext) createBucketSecrets(ctx context.Context) error {
-	_, err := tc.kubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.OutputS3Bucket), metav1.CreateOptions{})
+	_, err := tc.KubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.OutputS3Bucket), metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to create s3 secret for result: %w", err)
 	}
 
-	_, err = tc.kubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.DLQS3Bucket), metav1.CreateOptions{})
+	_, err = tc.KubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.DLQS3Bucket), metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to create s3 secret for dlq: %w", err)
 	}
@@ -302,12 +301,12 @@ func (tc TestContext) createBucketSecrets(ctx context.Context) error {
 }
 
 func (tc TestContext) deleteBucketSecrets(ctx context.Context) error {
-	err := tc.kubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.OutputS3Bucket, metav1.DeleteOptions{})
+	err := tc.KubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.OutputS3Bucket, metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete s3 secret for result: %w", err)
 	}
 
-	err = tc.kubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.DLQS3Bucket, metav1.DeleteOptions{})
+	err = tc.KubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.DLQS3Bucket, metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete s3 secret for dlq: %w", err)
 	}
@@ -363,7 +362,7 @@ func (tc TestContext) DeleteValkey(ctx context.Context) error {
 // Kafka func
 
 func (tc TestContext) DeleteKafkaTopic(ctx context.Context) error {
-	err := tc.kafkaAdmin.DeleteTopic(tc.Config.KafkaTopic)
+	err := tc.KafkaAdmin.DeleteTopic(tc.Config.KafkaTopic)
 	if err != nil {
 		return fmt.Errorf("failed to delete kafka topic: %w", err)
 	}
@@ -377,7 +376,7 @@ func (tc TestContext) PushFile(ctx context.Context, path string) error {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	_, _, err = tc.kafkaProducer.SendMessage(&sarama.ProducerMessage{
+	_, _, err = tc.KafkaProducer.SendMessage(&sarama.ProducerMessage{
 		Topic: tc.Config.KafkaTopic,
 		Value: sarama.ByteEncoder(payload),
 	})
@@ -386,38 +385,6 @@ func (tc TestContext) PushFile(ctx context.Context, path string) error {
 	}
 
 	return nil
-}
-
-func (tc TestContext) UpdateDateAndPush(ctx context.Context, path string) error {
-	updatedPayload, err := ReadAndUpdateDate(ctx, path)
-	if err != nil {
-		return fmt.Errorf("failed to read & update file: %w", err)
-	}
-
-	_, _, err = tc.kafkaProducer.SendMessage(&sarama.ProducerMessage{
-		Topic: tc.Config.KafkaTopic,
-		Value: sarama.ByteEncoder(updatedPayload),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to push msg: %w", err)
-	}
-
-	return nil
-}
-
-// Template
-func ReadAndUpdateDate(ctx context.Context, path string) ([]byte, error) {
-	payload, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-
-	now := time.Now()
-	nowStr := fmt.Sprintf("%04d-%02d-%02dT00:00:00.000Z", now.Year(), now.Month(), now.Day())
-
-	ret := strings.ReplaceAll(string(payload), "CURRENT_DATE_PLACEHOLDER", nowStr)
-
-	return []byte(ret), nil
 }
 
 // S3 func
@@ -453,7 +420,7 @@ func (tc TestContext) DeleteS3Buckets(ctx context.Context) error {
 func (tc TestContext) ListS3Objects(ctx context.Context, bucket string, prefix string) ([]string, error) {
 	ret := make([]string, 0)
 
-	resp, err := tc.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+	resp, err := tc.S3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket: &bucket,
 		Prefix: &prefix,
 	})
@@ -469,7 +436,7 @@ func (tc TestContext) ListS3Objects(ctx context.Context, bucket string, prefix s
 }
 
 func (tc TestContext) createS3Bucket(ctx context.Context, bucket string) error {
-	_, err := tc.s3Client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: &bucket})
+	_, err := tc.S3Client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: &bucket})
 	if err != nil {
 		return fmt.Errorf("failed to create bucket %s: %w", bucket, err)
 	}
@@ -503,7 +470,7 @@ func S3Path(eventType EventType, date time.Time) string {
 }
 
 func (tc TestContext) GetS3Object(ctx context.Context, key string) ([]byte, error) {
-	obj, err := tc.s3Client.GetObject(ctx, &s3.GetObjectInput{
+	obj, err := tc.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &tc.Config.OutputS3Bucket,
 		Key:    &key,
 	})
@@ -523,7 +490,7 @@ func (tc TestContext) GetS3Object(ctx context.Context, key string) ([]byte, erro
 
 // Kube func
 func (tc TestContext) PortForward(ctx context.Context, namespace string, pod string, ports []string) ([]portforward.ForwardedPort, chan struct{}, error) {
-	url := tc.kubeClient.CoreV1().RESTClient().Post().
+	url := tc.KubeClient.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Namespace(namespace).
 		Name(pod).
@@ -576,7 +543,7 @@ func (tc TestContext) ListProcessingPod(ctx context.Context) (*corev1.PodList, e
 		return nil, fmt.Errorf("failed to create label selector: %w", err)
 	}
 
-	ret, err := tc.kubeClient.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
+	ret, err := tc.KubeClient.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: label.String(),
 	})
 	if err != nil {

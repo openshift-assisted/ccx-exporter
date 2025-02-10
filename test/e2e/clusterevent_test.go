@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"context"
+	"os"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -43,7 +44,7 @@ var _ = Describe("Checking cluster event happy path", func() {
 
 	When("pushing an valid clusterevent event", func() {
 		BeforeEach(func() {
-			err := testContext.UpdateDateAndPush(ctx, "resources/input/event.kafka.json")
+			err := testContext.PushFile(ctx, "resources/input/event.kafka.json")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -53,14 +54,14 @@ var _ = Describe("Checking cluster event happy path", func() {
 				objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(len(objects)).To(Equal(1))
-				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeEvents, time.Now())))
+				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeEvents, time.Date(2025, 02, 03, 0, 0, 0, 0, time.UTC))))
 
 				// Parsing actual output
 				actualContent, err := testContext.GetS3Object(ctx, objects[0])
 				g.Expect(err).NotTo(HaveOccurred())
 
 				// Parsing expected output
-				expectedContent, err := e2e.ReadAndUpdateDate(ctx, "resources/output/event.s3.json")
+				expectedContent, err := os.ReadFile("resources/output/event.s3.json")
 				g.Expect(err).NotTo(HaveOccurred())
 
 				// Check it matches
