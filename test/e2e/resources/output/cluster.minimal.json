@@ -1,0 +1,15 @@
+{
+    "created_at": "2025-02-03T20:35:13.995097Z",
+    "email_domain": "redhat.com",
+    "id": "4b50c364-007e-4e2c-88a8-a86441900931",
+    "updated_at": "2025-02-03T21:02:54.995809Z",
+    "cluster_state_id": "cd55c1979ed11408c84792eefb1d2114",
+    "hosts": [
+        {
+            "cluster_id": "4b50c364-007e-4e2c-88a8-a86441900931",
+            "id": "61a8e677-debb-44bf-b7cf-382f8d74f0ef",
+            "extra": "edited",
+            "host_inventory": null
+        }
+    ]
+}

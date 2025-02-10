@@ -1,0 +1,20 @@
+{
+    "Name": "ClusterState",
+    "Payload": {
+        "created_at": "2025-02-03T20:35:13.995097Z",
+        "email_domain": "redhat.com",
+        "id": "4b50c364-007e-4e2c-88a8-a86441900931",
+        "updated_at": "2025-02-03T21:02:54.995809Z"
+    },
+    "Metadata": {
+        "versions": {
+            "release_tag": "master",
+            "versions": {
+                "assisted-installer": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-ds-main:latest",
+                "assisted-installer-controller": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-controller-ds-main:latest",
+                "assisted-installer-service": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-service-saas-main/assisted-service-saas-main:456b638972b2c03ea20fe371029786acddaca5df",
+                "discovery-agent": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-agent-ds-main:latest"
+            }
+        }
+    }
+}
