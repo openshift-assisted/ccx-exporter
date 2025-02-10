@@ -17,7 +17,7 @@ var (
 	errFieldInvalidType = errors.New("field type was not the expected one")
 	errEmptyValue       = errors.New("empty value")
 
-	dateFormat = "<year>-<month>-<day>T<hour>:<minute>:<second>.<milli>Z"
+	dateFormat = "<year>-<month>-<day>T<hour>:<minute>:<second>.<micro>Z"
 )
 
 func ExtractEventTime(event entity.Event) (time.Time, error) {
@@ -84,7 +84,7 @@ func FormatDate(date time.Time) string {
 		"<hour>", fmt.Sprintf("%02d", date.Hour()),
 		"<minute>", fmt.Sprintf("%02d", date.Minute()),
 		"<second>", fmt.Sprintf("%02d", date.Second()),
-		"<milli>", fmt.Sprintf("%03d", int(date.Nanosecond()/1000000)),
+		"<micro>", fmt.Sprintf("%06d", int(date.Nanosecond()/1e3)),
 	)
 
 	return replacer.Replace(dateFormat)

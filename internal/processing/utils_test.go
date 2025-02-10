@@ -88,23 +88,28 @@ func TestFormatDate(t *testing.T) {
 	cases := []testCase{
 		{
 			name:     "happy path",
-			date:     time.Date(2024, 11, 21, 2, 57, 38, 485000000, time.UTC),
-			expected: "2024-11-21T02:57:38.485Z",
+			date:     time.Date(2024, 11, 21, 2, 57, 38, 485101000, time.UTC),
+			expected: "2024-11-21T02:57:38.485101Z",
 		},
 		{
 			name:     "2 digits for fractional seconds",
 			date:     time.Date(2024, 11, 21, 2, 57, 38, 480000000, time.UTC),
-			expected: "2024-11-21T02:57:38.480Z",
+			expected: "2024-11-21T02:57:38.480000Z",
+		},
+		{
+			name:     "2 digits for fractional seconds, starting with 0",
+			date:     time.Date(2024, 11, 21, 2, 57, 38, 4800000, time.UTC),
+			expected: "2024-11-21T02:57:38.004800Z",
 		},
 		{
 			name:     "0 digits for fractional seconds",
 			date:     time.Date(2024, 11, 21, 2, 57, 38, 0o00000000, time.UTC),
-			expected: "2024-11-21T02:57:38.000Z",
+			expected: "2024-11-21T02:57:38.000000Z",
 		},
 		{
-			name:     "5 digits for fractional seconds",
-			date:     time.Date(2024, 11, 21, 2, 57, 38, 485870000, time.UTC),
-			expected: "2024-11-21T02:57:38.485Z",
+			name:     "7 digits for fractional seconds",
+			date:     time.Date(2024, 11, 21, 2, 57, 38, 485874300, time.UTC),
+			expected: "2024-11-21T02:57:38.485874Z",
 		},
 	}
 
