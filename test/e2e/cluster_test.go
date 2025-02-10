@@ -66,7 +66,7 @@ var _ = Describe("Checking cluster state happy path", func() {
 				objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(len(objects)).To(Equal(1))
-				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeClusters, time.Date(2025, 02, 03, 0, 0, 0, 0, time.UTC))))
+				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeClusters, e2e.EventDate)))
 
 				// Parsing actual output
 				actualContent, err := testContext.GetS3Object(ctx, objects[0])

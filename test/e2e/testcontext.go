@@ -35,6 +35,8 @@ const (
 	namespace = "ccx-exporter"
 )
 
+var EventDate = time.Date(2025, time.February, 3, 0, 0, 0, 0, time.UTC)
+
 type EventType string
 
 const (

@@ -55,7 +55,7 @@ var _ = Describe("Checking infraenv idempotency", func() {
 				objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(len(objects)).To(Equal(1))
-				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeInfraEnvs, time.Date(2025, 02, 03, 0, 0, 0, 0, time.UTC))))
+				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeInfraEnvs, e2e.EventDate)))
 
 				obj, err := testContext.S3Client.GetObject(ctx, &s3.GetObjectInput{
 					Bucket: &testConfig.OutputS3Bucket,
@@ -93,7 +93,7 @@ var _ = Describe("Checking infraenv idempotency", func() {
 					objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
 					g.Expect(err).NotTo(HaveOccurred())
 					g.Expect(len(objects)).To(Equal(1))
-					g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeInfraEnvs, time.Date(2025, 02, 03, 0, 0, 0, 0, time.UTC))))
+					g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeInfraEnvs, e2e.EventDate)))
 
 					obj, err := testContext.S3Client.GetObject(ctx, &s3.GetObjectInput{
 						Bucket: &testConfig.OutputS3Bucket,
