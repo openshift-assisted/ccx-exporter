@@ -1,0 +1,110 @@
+{
+    "Name": "ClusterState",
+    "Payload": {
+        "additional_ntp_source": "clock.redhat.com",
+        "ams_subscription_id": "2sY0JLT6tyCR8C7kC3wB6QF523m",
+        "api_vips": [],
+        "base_dns_domain": "redhat.com",
+        "cluster_networks": [
+            {
+                "cidr": "10.128.0.0/14",
+                "cluster_id": "fac64e8a-9421-444b-8093-8552ed2e818f",
+                "host_prefix": 23
+            }
+        ],
+        "connectivity_majority_groups": "{\"majority_groups\":{\"IPv4\":[],\"IPv6\":[]},\"l3_connected_addresses\":{}}",
+        "control_plane_count": 1,
+        "controller_logs_collected_at": "0001-01-01T00:00:00.000Z",
+        "controller_logs_started_at": "0001-01-01T00:00:00.000Z",
+        "cpu_architecture": "x86_64",
+        "created_at": "2025-02-03T21:12:07.81755Z",
+        "deleted_at": null,
+        "disk_encryption": {
+            "enable_on": "none",
+            "mode": "tpmv2"
+        },
+        "email_domain": "redhat.com",
+        "feature_usage": "{\"Additional NTP Source\":{\"data\":{\"source_count\":1},\"id\":\"ADDITIONAL_NTP_SOURCE\",\"name\":\"Additional NTP Source\"},\"Hyperthreading\":{\"data\":{\"hyperthreading_enabled\":\"all\"},\"id\":\"HYPERTHREADING\",\"name\":\"Hyperthreading\"},\"OVN network type\":{\"id\":\"OVN_NETWORK_TYPE\",\"name\":\"OVN network type\"},\"SNO\":{\"id\":\"SNO\",\"name\":\"SNO\"},\"Static Network Config\":{\"id\":\"STATIC_NETWORK_CONFIG\",\"name\":\"Static Network Config\"}}",
+        "high_availability_mode": "None",
+        "host_networks": null,
+        "hosts": [],
+        "href": "/api/assisted-install/v2/clusters/fac64e8a-9421-444b-8093-8552ed2e818f",
+        "hyperthreading": "all",
+        "id": "fac64e8a-9421-444b-8093-8552ed2e818f",
+        "ignition_endpoint": {},
+        "image_info": {
+            "created_at": "2025-02-03T21:12:07.81755Z",
+            "expires_at": "0001-01-01T00:00:00.000Z"
+        },
+        "ingress_vips": [],
+        "install_completed_at": "0001-01-01T00:00:00.000Z",
+        "install_started_at": "0001-01-01T00:00:00.000Z",
+        "ip_collisions": "{}",
+        "kind": "Cluster",
+        "last-installation-preparation": {},
+        "load_balancer": {
+            "type": "cluster-managed"
+        },
+        "machine_networks": [],
+        "monitored_operators": [
+            {
+                "bundles": null,
+                "cluster_id": "fac64e8a-9421-444b-8093-8552ed2e818f",
+                "name": "console",
+                "operator_type": "builtin",
+                "status_updated_at": "0001-01-01T00:00:00.000Z",
+                "timeout_seconds": 3600
+            },
+            {
+                "bundles": null,
+                "cluster_id": "fac64e8a-9421-444b-8093-8552ed2e818f",
+                "name": "cvo",
+                "operator_type": "builtin",
+                "status_updated_at": "0001-01-01T00:00:00.000Z",
+                "timeout_seconds": 3600
+            }
+        ],
+        "name": "test-infra-cluster-181ce999",
+        "network_type": "OVNKubernetes",
+        "ocp_release_image": "quay.io/openshift-release-dev/ocp-release:4.18.0-rc.6-x86_64",
+        "openshift_version": "4.18.0-rc.6",
+        "org_id": "7199842",
+        "org_soft_timeouts_enabled": true,
+        "platform": {
+            "external": {},
+            "type": "none"
+        },
+        "progress": {
+            "finalizing_stage_started_at": "0001-01-01T00:00:00.000Z"
+        },
+        "pull_secret_set": true,
+        "schedulable_masters": false,
+        "schedulable_masters_forced_true": true,
+        "service_networks": [
+            {
+                "cidr": "172.30.0.0/16",
+                "cluster_id": "fac64e8a-9421-444b-8093-8552ed2e818f"
+            }
+        ],
+        "ssh_public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDO2W6UGAX++0ERBbaa7PKULMRxH+dNSG+zOzBnW2iWdmdEPoRtEhFXEiEivyPsuieKIoF4Jc9qYl40jULmNmzt/abqKo3I7r48P7mBU1gbbVyJOwvf7D2GPTcGcK3q7PzEkcUdnBJx77xopxGxjjOSOAhEKJpVoAIgU0eEDaZU3skFM77TOpHGopdWkR9XjQEdlJ1/in2FoK5pHo4yrk1F1CU1dGQCmnBaChiH2yGZ2LIp7jRTRxBeHoVduqoX7fzpBiihZvmwEJy62rsPAabS5MMwIzJ2d0yzT7F8uq2bQKvehAkrY8xMVLU4pPm34xnH1GENMRSBzudbjYYXejBt",
+        "status": "pending-for-input",
+        "status_info": "User input required",
+        "status_updated_at": "2025-02-03T21:12:15.046Z",
+        "updated_at": "2025-02-03T21:15:53.942513Z",
+        "user_managed_networking": true,
+        "user_name": "anon",
+        "validations_info": "{\"configuration\":[{\"id\":\"platform-requirements-satisfied\",\"status\":\"success\",\"message\":\"Platform requirements satisfied\"},{\"id\":\"pull-secret-set\",\"status\":\"success\",\"message\":\"The pull secret is set.\"}],\"hosts-data\":[{\"id\":\"all-hosts-are-ready-to-install\",\"status\":\"success\",\"message\":\"All hosts in the cluster are ready to install.\"},{\"id\":\"sufficient-masters-count\",\"status\":\"failure\",\"message\":\"Single-node clusters must have a single control plane node and no workers.\"}],\"network\":[{\"id\":\"api-vips-defined\",\"status\":\"success\",\"message\":\"API virtual IPs are not required: User Managed Networking\"},{\"id\":\"api-vips-valid\",\"status\":\"success\",\"message\":\"API virtual IPs are not required: User Managed Networking\"},{\"id\":\"cluster-cidr-defined\",\"status\":\"success\",\"message\":\"The Cluster Network CIDR is defined.\"},{\"id\":\"dns-domain-defined\",\"status\":\"success\",\"message\":\"The base domain is defined.\"},{\"id\":\"ingress-vips-defined\",\"status\":\"success\",\"message\":\"Ingress virtual IPs are not required: User Managed Networking\"},{\"id\":\"ingress-vips-valid\",\"status\":\"success\",\"message\":\"Ingress virtual IPs are not required: User Managed Networking\"},{\"id\":\"machine-cidr-defined\",\"status\":\"pending\",\"message\":\"Hosts have not been discovered yet\"},{\"id\":\"machine-cidr-equals-to-calculated-cidr\",\"status\":\"success\",\"message\":\"The Cluster Machine CIDR is not required: User Managed Networking\"},{\"id\":\"network-prefix-valid\",\"status\":\"success\",\"message\":\"The Cluster Network prefix is valid.\"},{\"id\":\"network-type-valid\",\"status\":\"success\",\"message\":\"The cluster has a valid network type\"},{\"id\":\"networks-same-address-families\",\"status\":\"pending\",\"message\":\"At least one of the CIDRs (Machine Network, Cluster Network, Service Network) is undefined.\"},{\"id\":\"no-cidrs-overlapping\",\"status\":\"pending\",\"message\":\"At least one of the CIDRs (Cluster Network, Service Network) is undefined.\"},{\"id\":\"ntp-server-configured\",\"status\":\"success\",\"message\":\"No ntp problems found\"},{\"id\":\"service-cidr-defined\",\"status\":\"success\",\"message\":\"The Service Network CIDR is defined.\"}],\"operators\":[{\"id\":\"authorino-requirements-satisfied\",\"status\":\"success\",\"message\":\"authorino is disabled\"},{\"id\":\"cnv-requirements-satisfied\",\"status\":\"success\",\"message\":\"cnv is disabled\"},{\"id\":\"lso-requirements-satisfied\",\"status\":\"success\",\"message\":\"lso is disabled\"},{\"id\":\"lvm-requirements-satisfied\",\"status\":\"success\",\"message\":\"lvm is disabled\"},{\"id\":\"mce-requirements-satisfied\",\"status\":\"success\",\"message\":\"mce is disabled\"},{\"id\":\"mtv-requirements-satisfied\",\"status\":\"success\",\"message\":\"mtv is disabled\"},{\"id\":\"nmstate-requirements-satisfied\",\"status\":\"success\",\"message\":\"nmstate is disabled\"},{\"id\":\"node-feature-discovery-requirements-satisfied\",\"status\":\"success\",\"message\":\"node-feature-discovery is disabled\"},{\"id\":\"nvidia-gpu-requirements-satisfied\",\"status\":\"success\",\"message\":\"nvidia-gpu is disabled\"},{\"id\":\"odf-requirements-satisfied\",\"status\":\"success\",\"message\":\"odf is disabled\"},{\"id\":\"openshift-ai-requirements-satisfied\",\"status\":\"success\",\"message\":\"openshift-ai is disabled\"},{\"id\":\"osc-requirements-satisfied\",\"status\":\"success\",\"message\":\"osc is disabled\"},{\"id\":\"pipelines-requirements-satisfied\",\"status\":\"success\",\"message\":\"pipelines is disabled\"},{\"id\":\"serverless-requirements-satisfied\",\"status\":\"success\",\"message\":\"serverless is disabled\"},{\"id\":\"servicemesh-requirements-satisfied\",\"status\":\"success\",\"message\":\"servicemesh is disabled\"}]}",
+        "vip_dhcp_allocation": false
+    },
+    "Metadata": {
+        "versions": {
+            "release_tag": "master",
+            "versions": {
+                "assisted-installer": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-ds-main:latest",
+                "assisted-installer-controller": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-controller-ds-main:latest",
+                "assisted-installer-service": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-service-saas-main/assisted-service-saas-main:456b638972b2c03ea20fe371029786acddaca5df",
+                "discovery-agent": "quay.io/redhat-user-workloads/assisted-installer-tenant/assisted-installer-application-ds-main/assisted-installer-agent-ds-main:latest"
+            }
+        }
+    }
+}
