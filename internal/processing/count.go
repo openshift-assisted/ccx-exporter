@@ -36,7 +36,7 @@ func NewCountData(p pipeline.Processing[entity.Event], registry prometheus.Regis
 }
 
 func (p CountData) Process(ctx context.Context, event entity.Event) error {
-	p.counter.WithLabelValues(event.Name).Inc()
+	defer p.counter.WithLabelValues(event.Name).Inc()
 
 	return p.inner.Process(ctx, event)
 }
