@@ -75,7 +75,10 @@ func (m Main) processClusterState(ctx context.Context, event entity.Event) error
 		return common.NewErrProcessingError(err, categoryErrInvalidClusterState, m.makeInputsFromHostStates(hostStates), "failed to hash user_name")
 	}
 
-	payload["user_id"] = hashedUser
+	if hashedUser != "" {
+		payload["user_id"] = hashedUser
+	}
+
 	delete(payload, "user_name")
 
 	// Compute cluster_state_id

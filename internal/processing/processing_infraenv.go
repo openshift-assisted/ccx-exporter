@@ -31,7 +31,10 @@ func (m Main) processInfraEnv(ctx context.Context, event entity.Event) error {
 		return common.NewErrProcessingError(err, categoryErrInvalidInfraEnvEvent, nil, "failed to hash user_name")
 	}
 
-	payload["user_id"] = hashedUser
+	if hashedUser != "" {
+		payload["user_id"] = hashedUser
+	}
+
 	delete(payload, "user_name")
 
 	// Add infraenv_state_id

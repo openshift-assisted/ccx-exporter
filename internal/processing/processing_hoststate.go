@@ -32,7 +32,10 @@ func (m Main) processHostState(ctx context.Context, event entity.Event) error {
 		return common.NewErrProcessingError(err, categoryErrInvalidHostEvent, nil, "failed to hash user_name")
 	}
 
-	payload["user_id"] = hashedUser
+	if hashedUser != "" {
+		payload["user_id"] = hashedUser
+	}
+
 	delete(payload, "user_name")
 
 	// Rename & "jsonify" inventory -> host_inventory

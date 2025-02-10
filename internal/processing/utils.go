@@ -103,7 +103,14 @@ func CopyPayload(payload map[string]interface{}) map[string]interface{} {
 func HashValue(payload map[string]interface{}, key string) (string, error) {
 	value, err := ExtractString(payload, key)
 	if err != nil {
-		return "", fmt.Errorf("failed to extract string: %w", err)
+		switch {
+		case errors.Is(err, errMissingKey):
+			return "", nil
+		case errors.Is(err, errEmptyValue):
+			return "", nil
+		default:
+			return "", fmt.Errorf("failed to extract string: %w", err)
+		}
 	}
 
 	return hash([]byte(value))
