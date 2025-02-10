@@ -78,16 +78,6 @@ var _ = Describe("Checking infraenv idempotency", func() {
 			})
 
 			It("should reprocess the event and output the same event", func() {
-				By("eventually incrementing the data count metrics")
-				Eventually(func(g Gomega, ctx context.Context) {
-					metric, err := testContext.GetMetric(ctx, e2e.DataCountMetricFamily, e2e.KeyValue{Key: "name", Value: "InfraEnv"})
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(metric.Counter).NotTo(BeNil())
-					Expect(metric.Counter.Value).NotTo(BeNil())
-					Expect(*metric.Counter.Value).To(BeEquivalentTo(2))
-				}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
-
 				By("having only 1 key in s3 with a stable content")
 				Eventually(func(g Gomega, ctx context.Context) {
 					objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
@@ -107,6 +97,16 @@ var _ = Describe("Checking infraenv idempotency", func() {
 
 					g.Expect(obj.LastModified).NotTo(BeNil())
 					g.Expect(obj.LastModified.Unix()).To(BeNumerically(">", firstTimestamp.Unix()))
+				}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
+
+				By("eventually incrementing the data count metrics")
+				Eventually(func(g Gomega, ctx context.Context) {
+					metric, err := testContext.GetMetric(ctx, e2e.DataCountMetricFamily, e2e.KeyValue{Key: "name", Value: "InfraEnv"})
+					g.Expect(err).NotTo(HaveOccurred())
+
+					g.Expect(metric.Counter).NotTo(BeNil())
+					g.Expect(metric.Counter.Value).NotTo(BeNil())
+					g.Expect(*metric.Counter.Value).To(BeEquivalentTo(2))
 				}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 			})
 		})

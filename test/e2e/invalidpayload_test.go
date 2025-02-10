@@ -58,11 +58,11 @@ var _ = Describe("Checking invalid data handling", func() {
 			By("eventually incrementing the error metrics")
 			Eventually(func(g Gomega, ctx context.Context) {
 				metric, err := testContext.GetMetric(ctx, e2e.ErrorMetricFamily, e2e.KeyValue{Key: "category", Value: "unknown_name"})
-				Expect(err).NotTo(HaveOccurred())
+				g.Expect(err).NotTo(HaveOccurred())
 
-				Expect(metric.Counter).NotTo(BeNil())
-				Expect(metric.Counter.Value).NotTo(BeNil())
-				Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
+				g.Expect(metric.Counter).NotTo(BeNil())
+				g.Expect(metric.Counter.Value).NotTo(BeNil())
+				g.Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
 	})

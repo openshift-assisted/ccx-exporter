@@ -59,11 +59,11 @@ var _ = Describe("Checking late data handling", func() {
 			By("eventually incrementing the late metrics")
 			Eventually(func(g Gomega, ctx context.Context) {
 				metric, err := testContext.GetMetric(ctx, e2e.LateDataMetricFamily, e2e.KeyValue{Key: "event_day", Value: "2024-10-27"}, e2e.KeyValue{Key: "name", Value: "Event"})
-				Expect(err).NotTo(HaveOccurred())
+				g.Expect(err).NotTo(HaveOccurred())
 
-				Expect(metric.Counter).NotTo(BeNil())
-				Expect(metric.Counter.Value).NotTo(BeNil())
-				Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
+				g.Expect(metric.Counter).NotTo(BeNil())
+				g.Expect(metric.Counter.Value).NotTo(BeNil())
+				g.Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
 	})

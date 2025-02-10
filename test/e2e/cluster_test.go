@@ -78,23 +78,23 @@ var _ = Describe("Checking cluster state happy path", func() {
 
 				// Check it matches
 				g.Expect(actualContent).To(MatchJSON(expectedContent))
-			}).WithContext(ctx).WithTimeout(15 * time.Second).WithPolling(5 * time.Second).Should(Succeed())
+			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 
 			By("eventually incrementing the data count metrics")
 			Eventually(func(g Gomega, ctx context.Context) {
 				metric, err := testContext.GetMetric(ctx, e2e.DataCountMetricFamily, e2e.KeyValue{Key: "name", Value: "ClusterState"})
-				Expect(err).NotTo(HaveOccurred())
+				g.Expect(err).NotTo(HaveOccurred())
 
-				Expect(metric.Counter).NotTo(BeNil())
-				Expect(metric.Counter.Value).NotTo(BeNil())
-				Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
+				g.Expect(metric.Counter).NotTo(BeNil())
+				g.Expect(metric.Counter.Value).NotTo(BeNil())
+				g.Expect(*metric.Counter.Value).To(BeEquivalentTo(1))
 
 				metric, err = testContext.GetMetric(ctx, e2e.DataCountMetricFamily, e2e.KeyValue{Key: "name", Value: "HostState"})
-				Expect(err).NotTo(HaveOccurred())
+				g.Expect(err).NotTo(HaveOccurred())
 
-				Expect(metric.Counter).NotTo(BeNil())
-				Expect(metric.Counter.Value).NotTo(BeNil())
-				Expect(*metric.Counter.Value).To(BeEquivalentTo(4))
+				g.Expect(metric.Counter).NotTo(BeNil())
+				g.Expect(metric.Counter.Value).NotTo(BeNil())
+				g.Expect(*metric.Counter.Value).To(BeEquivalentTo(4))
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
 	})
