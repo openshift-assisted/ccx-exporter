@@ -38,7 +38,7 @@ generate: generate.mocks
 check:    check.licenses check.imports check.fmt check.lint check.mocks
 test:     test.coverage
 logs:     logs.kube
-local:    local.kind local.namespace local.kraft local.valkey local.localstack local.processing.secret
+local:    local.kind local.kubeconfig local.namespace local.kraft local.valkey local.localstack local.processing.secret
 
 
 #########

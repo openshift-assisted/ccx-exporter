@@ -26,38 +26,38 @@ local.kubeconfig: build.prepare
 	@kind get kubeconfig -n $(CLUSTER_NAME) > $(LOCAL_KUBE_CONFIG)
 
 .PHONY: local.namespace
-local.namespace: local.kubeconfig
+local.namespace:
 	@$(KUBECTL) create namespace $(NAMESPACE)
 
 .PHONY: local.kraft
 ## local.kraft: Start kraft (kafka w/o zookeeper) exposed on 32323
-local.kraft: local.kubeconfig
+local.kraft:
 	@$(KUBECTL) apply -f $(CURDIR)/local/kraft.yaml
 
 .PHONY: local.valkey
 ## local.valkey: Start valkey exposed on 30379
-local.valkey: local.kubeconfig
+local.valkey:
 	@$(KUBECTL) apply -f $(CURDIR)/local/valkey-custo.yaml
 	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local | $(OC) apply -f -
 
 .PHONY: local.valkey.e2e
-local.valkey.e2e: local.kubeconfig
+local.valkey.e2e:
 	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local -p VALKEY_NAME=$(VALKEY_NAME) | $(OC) apply -f -
 	@$(KUBE_WAIT) sts/$(VALKEY_NAME)
 
 .PHONY: local.delete.valkey.e2e
-local.delete.valkey.e2e: local.kubeconfig
+local.delete.valkey.e2e:
 	@$(OC) process -f $(CURDIR)/openshift/valkey.yaml --local -p VALKEY_NAME=$(VALKEY_NAME) | $(OC) delete -f -
 
 ## local.localstack: Start s3 localstack exposed on 31566
 .PHONY: local.localstack
-local.localstack: local.kubeconfig
+local.localstack:
 	@$(HELM) repo add localstack https://localstack.github.io/helm-charts
 	@$(HELM) install localstack localstack/localstack --set-string persistence.enabled=true
 
 ## local.localstack.buckets: Create defaults buckets
 .PHONY: local.localstack.buckets
-local.localstack.buckets: local.kubeconfig
+local.localstack.buckets:
 	@$(KUBECTL) exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-result
 	@$(KUBECTL) exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-dlq
 
@@ -68,24 +68,24 @@ local.delete:
 
 .PHONY: local.import
 ## local.import: Import docker images to kind
-local.import: local.kubeconfig
+local.import:
 	@kind load docker-image -n $(CLUSTER_NAME) $(IMAGE_FULL)
 
 .PHONY: local.wait
 ## local.wait: Wait for post-install to be ready
-local.wait: local.kubeconfig
+local.wait:
 	@$(KUBE_WAIT) sts/kraft
 	@$(KUBE_WAIT) sts/valkey-ccx-exporter
 	@$(KUBE_WAIT) deployment/localstack
 
 .PHONY: local.processing.secret
 ## local.processing.secret: Deploy processing secrets
-local.processing.secret: local.kubeconfig
+local.processing.secret:
 	@$(KUBECTL) apply -f $(CURDIR)/local/processing-custo.yaml
 
 .PHONY: local.processing
 ## local.processing: Deploy processing
-local.processing: local.kubeconfig
+local.processing:
 	@mkdir -p $(DEPLOYMENT_DIR)
 	@$(OC) process -o yaml \
 		-f $(CURDIR)/openshift/processing.yaml --local \
@@ -113,7 +113,7 @@ local.processing: local.kubeconfig
 local.processing.update: build.docker local.import local.processing
 
 .PHONY: local.delete.processing
-local.delete.processing: local.kubeconfig
+local.delete.processing:
 	@$(OC) process \
 		-f $(CURDIR)/openshift/processing.yaml --local \
 		-p DEPLOYMENT_NAME=$(DEPLOYMENT_NAME) \
