@@ -43,6 +43,10 @@ parameters:
   value: ccx-processing-result
 - name: S3_DLQ_BUCKET_SECRETNAME
   value: ccx-processing-dlq
+- name: S3_PREFIX
+  value: ccx-exporter/output/
+- name: S3_DLQ_PREFIX
+  value: ccx-exporter/errors/
 
 # Kafka
 - name: KAFKA_URLS_SECRETNAME
@@ -126,7 +130,7 @@ objects:
         level: ${LOGS_LEVEL}
       deadletterqueue:
         usePathStyle: ${S3_USE_PATH_STYLE}
-        keyPrefix: ccx-exporter/errors/
+        keyPrefix: ${S3_DLQ_PREFIX}
       kafka:
         broker:
           version: ${KAFKA_VERSION}
@@ -141,7 +145,7 @@ objects:
         ttl: 1440h
       s3:
         usePathStyle: ${S3_USE_PATH_STYLE}
-        keyPrefix: ccx-exporter/output/
+        keyPrefix: ${S3_PREFIX}
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
