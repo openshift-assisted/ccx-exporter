@@ -6,8 +6,8 @@ metadata:
   namespace: ccx-exporter
 type: Opaque
 data:
-  username: dXNlbGVzcw== # useless
-  password: dXNlbGVzcw== # useless
+  username: dXNlbGVzcw== # useless # notsecret
+  password: dXNlbGVzcw== # useless # notsecret
 ---
 apiVersion: v1
 kind: Secret
@@ -16,8 +16,8 @@ metadata:
   namespace: ccx-exporter
 type: Opaque
 data:
-  username: dXNlbGVzcw== # useless
-  password: dXNlbGVzcw== # useless
+  username: dXNlbGVzcw== # useless # notsecret
+  password: dXNlbGVzcw== # useless # notsecret
 ---
 apiVersion: v1
 kind: Secret
@@ -36,8 +36,8 @@ metadata:
   namespace: ccx-exporter
 type: Opaque
 data:
-  aws_access_key_id: dXNlbGVzcw== # useless
-  aws_secret_access_key: dXNlbGVzcw== # useless
+  aws_access_key_id: dXNlbGVzcw== # useless # notsecret
+  aws_secret_access_key: dXNlbGVzcw== # useless # notsecret
   aws_region: dXMtZWFzdC0x # us-east-1
   bucket: Y2N4LXByb2Nlc3NpbmctcmVzdWx0 # ccx-processing-result
   endpoint: aHR0cDovL2xvY2Fsc3RhY2s6NDU2Ng== # http://localstack:4566
@@ -49,8 +49,8 @@ metadata:
   namespace: ccx-exporter
 type: Opaque
 data:
-  aws_access_key_id: dXNlbGVzcw== # useless
-  aws_secret_access_key: dXNlbGVzcw== # useless
+  aws_access_key_id: dXNlbGVzcw== # useless # notsecret
+  aws_secret_access_key: dXNlbGVzcw== # useless # notsecret
   aws_region: dXMtZWFzdC0x # us-east-1
   bucket: Y2N4LXByb2Nlc3NpbmctZGxx # ccx-processing-dlq
   endpoint: aHR0cDovL2xvY2Fsc3RhY2s6NDU2Ng== # http://localstack:4566
