@@ -126,7 +126,7 @@ objects:
     name: ${DEPLOYMENT_NAME}
   data:
     config.yaml: |-
-      log:
+      logs:
         level: ${LOGS_LEVEL}
       deadletterqueue:
         usePathStyle: ${S3_USE_PATH_STYLE}
