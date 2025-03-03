@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -20,8 +22,14 @@ const (
 	eventTypeClusters  = ".clusters"
 	eventTypeInfraEnvs = ".infra_envs"
 
+	categoryInvalidKey    = "s3_invalid_key"
 	categoryInternalError = "s3_internal_error"
 	categoryS3ClientError = "s3_client"
+)
+
+var (
+	rxHexa        = regexp.MustCompile("^[0-9a-f].*")
+	errInvalidKey = errors.New("invalid key")
 )
 
 type S3Writer struct {
@@ -59,7 +67,10 @@ func (s S3Writer) putObject(ctx context.Context, eventType string, obj entity.Pr
 	}
 
 	// Compute object key
-	key := s.computeObjectKey(eventType, obj)
+	key, err := s.computeObjectKey(eventType, obj)
+	if err != nil {
+		return err
+	}
 
 	// Write file
 	params := &s3.PutObjectInput{
@@ -76,7 +87,11 @@ func (s S3Writer) putObject(ctx context.Context, eventType string, obj entity.Pr
 	return nil
 }
 
-func (s S3Writer) computeObjectKey(eventType string, obj entity.Projection) string {
+func (s S3Writer) computeObjectKey(eventType string, obj entity.Projection) (string, error) {
+	if !rxHexa.MatchString(obj.ID) {
+		return "", common.NewErrProcessingError(errInvalidKey, categoryInvalidKey, nil, "last part of the key doesn't start by 0-9a-z")
+	}
+
 	template := strings.NewReplacer(
 		"<prefix>", s.prefix,
 		"<eventType>", eventType,
@@ -86,5 +101,5 @@ func (s S3Writer) computeObjectKey(eventType string, obj entity.Projection) stri
 		"<id>", obj.ID,
 	)
 
-	return template.Replace(keyTemplate)
+	return template.Replace(keyTemplate), nil
 }
