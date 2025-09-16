@@ -30,6 +30,12 @@ spec:
     value: Dockerfile
   - name: path-context
     value: .
+  - name: slack-webhook-notification-secret
+    value: slack-notif-webhook
+  - name: slack-webhook-notification-secret-key
+    value: token
+  - name: slack-webhook-notification-message
+    value: "[test] [some long message................................] [{{revision}}] [<https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/assisted-installer-tenant/applications/ccx-exporter-saas-main/pipelineruns/$(context.pipelineRun.name)|pipeline>] Konflux build failed"
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -51,6 +57,18 @@ spec:
           value: task
         resolver: bundles
     params:
+    - default: ""
+      description: Secret with at least one key where value is webhook URL for slack.
+      name: slack-webhook-notification-secret
+      type: string
+    - default: ""
+      description: Key in the secret which contains webhook URL for slack.
+      name: slack-webhook-notification-secret-key
+      type: string
+    - default: ""
+      description: Message to be sent to slack.
+      name: slack-webhook-notification-message
+      type: string
     - description: Source Repository URL
       name: git-url
       type: string
@@ -167,6 +185,27 @@ spec:
       workspaces:
       - name: basic-auth
         workspace: git-auth
+    - name: slack-webhook-notification
+      params:
+      - name: SOURCE_ARTIFACT
+        value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      - name: secret-name
+        value: $(params.slack-webhook-notification-secret)
+      - name: key-name
+        value: $(params.slack-webhook-notification-secret-key)
+      - name: message
+        value: $(params.slack-webhook-notification-message)
+      runAfter:
+      - clone-repository
+      taskRef:
+        params:
+        - name: name
+          value: slack-webhook-notification-oci-ta
+        - name: bundle
+          value: quay.io/konflux-ci/tekton-catalog/task-slack-webhook-notification-oci-ta:0.1@sha256:8021bf62c489c0327b037542c816ad34573e598f1697faccd2958876db11162e
+        - name: kind
+          value: task
+        resolver: bundles
     - name: prefetch-dependencies
       params:
       - name: input
