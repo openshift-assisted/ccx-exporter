@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/config"
+	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/host"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/processingerror"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/repo/projectedevent"
@@ -114,14 +116,7 @@ var processCmd = &cobra.Command{
 			}
 		}()
 
-		// Create S3 clients
-		s3Client, err := factory.CreateS3Client(ctx, conf.S3)
-		if err != nil {
-			logger.Error(err, "failed to create main s3 client")
-
-			return
-		}
-
+		// Create S3 clients for DQL
 		dlqS3Client, err := factory.CreateS3Client(ctx, conf.DeadLetterQueue)
 		if err != nil {
 			logger.Error(err, "failed to create dlq s3 client")
@@ -145,7 +140,12 @@ var processCmd = &cobra.Command{
 		processingErrorWriter := processingerror.NewS3Writer(dlqS3Client, conf.DeadLetterQueue.Bucket, conf.DeadLetterQueue.KeyPrefix)
 
 		// Create S3 repo for projected event
-		projectedEventWriter := projectedevent.NewS3Writer(s3Client, conf.S3.Bucket, conf.S3.KeyPrefix)
+		projectedEventWriter, err := newS3Writer(ctx)
+		if err != nil {
+			logger.Error(err, "failed to create s3 repo")
+
+			return
+		}
 
 		// Create valkey repo for event
 		valkeyRepo := host.NewValkeyRepo(valkeyClient, conf.Valkey.TTL)
@@ -184,6 +184,27 @@ var processCmd = &cobra.Command{
 
 		logger.V(2).Info("Processing stopped")
 	},
+}
+
+func newS3Writer(ctx context.Context) (repo.ProjectionWriter, error) {
+	writers := make([]repo.ProjectionWriter, 0)
+
+	if len(conf.Output.S3) == 0 {
+		return nil, errors.New("at least one s3 output must be specified")
+	}
+
+	for _, c := range conf.Output.S3 {
+		s3Client, err := factory.CreateS3Client(ctx, c)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create s3 client: %w", err)
+		}
+
+		writer := projectedevent.NewS3Writer(s3Client, c.Bucket, c.KeyPrefix)
+
+		writers = append(writers, writer)
+	}
+
+	return projectedevent.NewParallelWriter(writers...), nil
 }
 
 func init() {

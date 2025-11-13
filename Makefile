@@ -174,7 +174,7 @@ test.unit:
 ## test.coverage: Run all tests and compute code coverage
 test.coverage: test.prepare
 	@$(MAKE) -s build.docker local.import BUILD_ARGS="-cover"
-	@go test ./... -cover -test.gocoverdir $(CURDIR)/build/coverdata
+	@go test -timeout 30m ./... -cover -test.gocoverdir $(CURDIR)/build/coverdata
 	@go tool covdata textfmt -i=$(COVERAGE_DIR) -o=$(COVERAGE_DIR)/coverage.out.tmp
 	@cat $(COVERAGE_DIR)/coverage.out.tmp | grep -vE "mock_|$(GO_MODULE)/test/|/build/cmd/ccx-exporter/main.go" > $(COVERAGE_DIR)/coverage.out
 	@go tool cover -func $(COVERAGE_DIR)/coverage.out

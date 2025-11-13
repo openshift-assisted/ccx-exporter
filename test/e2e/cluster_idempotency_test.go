@@ -64,22 +64,24 @@ var _ = Describe("Checking cluster state event idempotency", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func(g Gomega, ctx context.Context) {
-				objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(len(objects)).To(Equal(1))
-				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeClusters, e2e.EventDate)))
+				for i, bucket := range testConfig.OutputS3Buckets {
+					objects, err := testContext.ListS3Objects(ctx, bucket, "")
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(len(objects)).To(Equal(1))
+					g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeClusters, e2e.EventDate, i)))
 
-				obj, err := testContext.S3Client.GetObject(ctx, &s3.GetObjectInput{
-					Bucket: &testConfig.OutputS3Bucket,
-					Key:    &objects[0],
-				})
-				g.Expect(err).NotTo(HaveOccurred())
+					obj, err := testContext.S3Client.GetObject(ctx, &s3.GetObjectInput{
+						Bucket: &bucket,
+						Key:    &objects[0],
+					})
+					g.Expect(err).NotTo(HaveOccurred())
 
-				firstContent, err = io.ReadAll(obj.Body)
-				g.Expect(err).NotTo(HaveOccurred())
+					firstContent, err = io.ReadAll(obj.Body)
+					g.Expect(err).NotTo(HaveOccurred())
 
-				g.Expect(obj.LastModified).NotTo(BeNil())
-				firstTimestamp = *obj.LastModified
+					g.Expect(obj.LastModified).NotTo(BeNil())
+					firstTimestamp = *obj.LastModified
+				}
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 		})
 
@@ -92,23 +94,25 @@ var _ = Describe("Checking cluster state event idempotency", func() {
 			It("should reprocess the event and output the same event", func() {
 				By("having only 1 key in s3 with a stable content")
 				Eventually(func(g Gomega, ctx context.Context) {
-					objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
-					g.Expect(err).NotTo(HaveOccurred())
-					g.Expect(len(objects)).To(Equal(1))
-					g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeClusters, e2e.EventDate)))
+					for i, bucket := range testConfig.OutputS3Buckets {
+						objects, err := testContext.ListS3Objects(ctx, bucket, "")
+						g.Expect(err).NotTo(HaveOccurred())
+						g.Expect(len(objects)).To(Equal(1))
+						g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeClusters, e2e.EventDate, i)))
 
-					obj, err := testContext.S3Client.GetObject(ctx, &s3.GetObjectInput{
-						Bucket: &testConfig.OutputS3Bucket,
-						Key:    &objects[0],
-					})
-					g.Expect(err).NotTo(HaveOccurred())
+						obj, err := testContext.S3Client.GetObject(ctx, &s3.GetObjectInput{
+							Bucket: &bucket,
+							Key:    &objects[0],
+						})
+						g.Expect(err).NotTo(HaveOccurred())
 
-					content, err := io.ReadAll(obj.Body)
-					g.Expect(err).NotTo(HaveOccurred())
-					g.Expect(content).To(Equal(firstContent))
+						content, err := io.ReadAll(obj.Body)
+						g.Expect(err).NotTo(HaveOccurred())
+						g.Expect(content).To(Equal(firstContent))
 
-					g.Expect(obj.LastModified).NotTo(BeNil())
-					g.Expect(obj.LastModified.Unix()).To(BeNumerically(">", firstTimestamp.Unix()))
+						g.Expect(obj.LastModified).NotTo(BeNil())
+						g.Expect(obj.LastModified.Unix()).To(BeNumerically(">", firstTimestamp.Unix()))
+					}
 				}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 
 				By("eventually incrementing the data count metrics")

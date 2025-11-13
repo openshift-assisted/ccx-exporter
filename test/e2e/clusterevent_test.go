@@ -51,21 +51,23 @@ var _ = Describe("Checking cluster event happy path", func() {
 		It("should process the event", func(ctx SpecContext) {
 			By("eventually creating a file in s3 (result) with expected output")
 			Eventually(func(g Gomega, ctx context.Context) {
-				objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(len(objects)).To(Equal(1))
-				g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeEvents, e2e.EventDate)))
+				for i, bucket := range testConfig.OutputS3Buckets {
+					objects, err := testContext.ListS3Objects(ctx, bucket, "")
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(len(objects)).To(Equal(1))
+					g.Expect(objects[0]).To(ContainSubstring(e2e.S3Path(e2e.EventTypeEvents, e2e.EventDate, i)))
 
-				// Parsing actual output
-				actualContent, err := testContext.GetS3Object(ctx, objects[0])
-				g.Expect(err).NotTo(HaveOccurred())
+					// Parsing actual output
+					actualContent, err := testContext.GetS3Object(ctx, bucket, objects[0])
+					g.Expect(err).NotTo(HaveOccurred())
 
-				// Parsing expected output
-				expectedContent, err := os.ReadFile("resources/output/event.s3.json")
-				g.Expect(err).NotTo(HaveOccurred())
+					// Parsing expected output
+					expectedContent, err := os.ReadFile("resources/output/event.s3.json")
+					g.Expect(err).NotTo(HaveOccurred())
 
-				// Check it matches
-				g.Expect(actualContent).To(MatchJSON(expectedContent))
+					// Check it matches
+					g.Expect(actualContent).To(MatchJSON(expectedContent))
+				}
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 
 			By("eventually incrementing the data count metrics")
