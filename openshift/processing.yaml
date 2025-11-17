@@ -39,14 +39,25 @@ parameters:
 # s3
 - name: S3_USE_PATH_STYLE
   value: "false"
-- name: S3_BUCKET_SECRETNAME
-  value: ccx-processing-result
-- name: S3_DLQ_BUCKET_SECRETNAME
+
+- name: DLQ_S3_SECRETNAME
   value: ccx-processing-dlq
-- name: S3_PREFIX
-  value: ccx-exporter/output/
-- name: S3_DLQ_PREFIX
+- name: DLQ_S3_PREFIX
   value: ccx-exporter/errors/
+
+- name: OUTPUT_S3_0_SECRETNAME
+  value: ccx-processing-result
+- name: OUTPUT_S3_0_PREFIX
+  value: ccx-exporter/output-0/
+- name: OUTPUT_S3_1_SECRETNAME
+  value: ccx-processing-result
+- name: OUTPUT_S3_1_PREFIX
+  value: ccx-exporter/output-1/
+- name: OUTPUT_S3_2_SECRETNAME
+  value: ccx-processing-result
+- name: OUTPUT_S3_2_PREFIX
+  value: ccx-exporter/output-2/
+
 
 # Kafka
 - name: KAFKA_URLS_SECRETNAME
@@ -130,7 +141,8 @@ objects:
         level: ${LOGS_LEVEL}
       deadletterqueue:
         usePathStyle: ${S3_USE_PATH_STYLE}
-        keyPrefix: ${S3_DLQ_PREFIX}
+        keyPrefix: ${DLQ_S3_PREFIX}
+        secretPath: /mnt/s3/dlq/${DLQ_S3_SECRETNAME}
       kafka:
         broker:
           version: ${KAFKA_VERSION}
@@ -143,9 +155,17 @@ objects:
       valkey:
         url: ${VALKEY_URL}
         ttl: 1440h
-      s3:
-        usePathStyle: ${S3_USE_PATH_STYLE}
-        keyPrefix: ${S3_PREFIX}
+      output:
+        s3:
+        - usePathStyle: ${S3_USE_PATH_STYLE}
+          keyPrefix: ${OUTPUT_S3_0_PREFIX}
+          secretPath: /mnt/s3/output/${OUTPUT_S3_0_SECRETNAME}
+        - usePathStyle: ${S3_USE_PATH_STYLE}
+          keyPrefix: ${OUTPUT_S3_1_PREFIX}
+          secretPath: /mnt/s3/output/${OUTPUT_S3_1_SECRETNAME}
+        - usePathStyle: ${S3_USE_PATH_STYLE}
+          keyPrefix: ${OUTPUT_S3_2_PREFIX}
+          secretPath: /mnt/s3/output/${OUTPUT_S3_2_SECRETNAME}
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -213,58 +233,6 @@ objects:
           - --config
           - /etc/processing/config.yaml
           env:
-          # s3 bucket
-          - name: CCXEXPORTER_S3_BUCKET
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_BUCKET_SECRETNAME}
-                key: bucket
-          - name: CCXEXPORTER_S3_BASEENDPOINT
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_BUCKET_SECRETNAME}
-                key: endpoint
-          - name: CCXEXPORTER_S3_REGION
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_BUCKET_SECRETNAME}
-                key: aws_region
-          - name: CCXEXPORTER_S3_CREDS_ACCESSKEYID
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_BUCKET_SECRETNAME}
-                key: aws_access_key_id
-          - name: CCXEXPORTER_S3_CREDS_SECRETACCESSKEY
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_BUCKET_SECRETNAME}
-                key: aws_secret_access_key
-          # dlq bucket
-          - name: CCXEXPORTER_DEADLETTERQUEUE_BUCKET
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_DLQ_BUCKET_SECRETNAME}
-                key: bucket
-          - name: CCXEXPORTER_DEADLETTERQUEUE_BASEENDPOINT
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_DLQ_BUCKET_SECRETNAME}
-                key: endpoint
-          - name: CCXEXPORTER_DEADLETTERQUEUE_REGION
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_DLQ_BUCKET_SECRETNAME}
-                key: aws_region
-          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_ACCESSKEYID
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_DLQ_BUCKET_SECRETNAME}
-                key: aws_access_key_id
-          - name: CCXEXPORTER_DEADLETTERQUEUE_CREDS_SECRETACCESSKEY
-            valueFrom:
-              secretKeyRef:
-                name: ${S3_DLQ_BUCKET_SECRETNAME}
-                key: aws_secret_access_key
           # valkey
           - name: CCXEXPORTER_VALKEY_CREDS_PASSWORD
             valueFrom:
@@ -300,6 +268,14 @@ objects:
           volumeMounts:
           - name: config
             mountPath: /etc/processing/
+          - name: output-0
+            mountPath: /mnt/s3/output/${OUTPUT_S3_0_SECRETNAME}
+          - name: output-1
+            mountPath: /mnt/s3/output/${OUTPUT_S3_1_SECRETNAME}
+          - name: output-2
+            mountPath: /mnt/s3/output/${OUTPUT_S3_2_SECRETNAME}
+          - name: dlq
+            mountPath: /mnt/s3/dlq/${DLQ_S3_SECRETNAME}
         volumes:
         - name: config
           configMap:
@@ -308,3 +284,15 @@ objects:
           configMap:
             name: ${DEPLOYMENT_NAME}-user-acl
             defaultMode: 493
+        - name: output-0
+          secret:
+            secretName: ${OUTPUT_S3_0_SECRETNAME}
+        - name: output-1
+          secret:
+            secretName: ${OUTPUT_S3_1_SECRETNAME}
+        - name: output-2
+          secret:
+            secretName: ${OUTPUT_S3_2_SECRETNAME}
+        - name: dlq
+          secret:
+            secretName: ${DLQ_S3_SECRETNAME}

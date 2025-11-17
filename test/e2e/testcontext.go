@@ -46,12 +46,12 @@ const (
 )
 
 type TestConfig struct {
-	DeploymentName string
-	KafkaTopic     string
-	ValkeyName     string
-	ValkeyURL      string
-	OutputS3Bucket string
-	DLQS3Bucket    string
+	DeploymentName  string
+	KafkaTopic      string
+	ValkeyName      string
+	ValkeyURL       string
+	OutputS3Buckets []string
+	DLQS3Bucket     string
 }
 
 type TestContext struct {
@@ -90,8 +90,12 @@ func CreateTestConfig(test string) TestConfig {
 		KafkaTopic:     name,
 		ValkeyName:     fmt.Sprintf("valkey-%s", name),
 		ValkeyURL:      fmt.Sprintf("valkey-%s-0.valkey-%s-headless:6379", name, name),
-		OutputS3Bucket: fmt.Sprintf("%s-result", name),
-		DLQS3Bucket:    fmt.Sprintf("%s-dlq", name),
+		OutputS3Buckets: []string{
+			fmt.Sprintf("%s-result-0", name),
+			fmt.Sprintf("%s-result-1", name),
+			fmt.Sprintf("%s-result-2", name),
+		},
+		DLQS3Bucket: fmt.Sprintf("%s-dlq", name),
 	}
 }
 
@@ -258,7 +262,9 @@ func (tc TestContext) DeployProcessing(ctx context.Context) error {
 			"DEPLOYMENT_NAME":          tc.Config.DeploymentName,
 			"VALKEY_URL":               tc.Config.ValkeyURL,
 			"KAFKA_TOPIC":              tc.Config.KafkaTopic,
-			"S3_BUCKET_SECRETNAME":     tc.Config.OutputS3Bucket,
+			"S3_BUCKET_SECRETNAME_0":   tc.Config.OutputS3Buckets[0],
+			"S3_BUCKET_SECRETNAME_1":   tc.Config.OutputS3Buckets[1],
+			"S3_BUCKET_SECRETNAME_2":   tc.Config.OutputS3Buckets[2],
 			"S3_DLQ_BUCKET_SECRETNAME": tc.Config.DLQS3Bucket,
 		},
 	)
@@ -289,12 +295,14 @@ func (tc TestContext) DeleteProcessing(ctx context.Context) error {
 }
 
 func (tc TestContext) createBucketSecrets(ctx context.Context) error {
-	_, err := tc.KubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.OutputS3Bucket), metav1.CreateOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to create s3 secret for result: %w", err)
+	for _, bucket := range tc.Config.OutputS3Buckets {
+		_, err := tc.KubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(bucket), metav1.CreateOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to create s3 secret for result: %w", err)
+		}
 	}
 
-	_, err = tc.KubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.DLQS3Bucket), metav1.CreateOptions{})
+	_, err := tc.KubeClient.CoreV1().Secrets(namespace).Create(ctx, createBucketSecret(tc.Config.DLQS3Bucket), metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to create s3 secret for dlq: %w", err)
 	}
@@ -303,12 +311,14 @@ func (tc TestContext) createBucketSecrets(ctx context.Context) error {
 }
 
 func (tc TestContext) deleteBucketSecrets(ctx context.Context) error {
-	err := tc.KubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.OutputS3Bucket, metav1.DeleteOptions{})
-	if err != nil && !k8serrors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete s3 secret for result: %w", err)
+	for _, bucket := range tc.Config.OutputS3Buckets {
+		err := tc.KubeClient.CoreV1().Secrets(namespace).Delete(ctx, bucket, metav1.DeleteOptions{})
+		if err != nil && !k8serrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete s3 secret for result: %w", err)
+		}
 	}
 
-	err = tc.KubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.DLQS3Bucket, metav1.DeleteOptions{})
+	err := tc.KubeClient.CoreV1().Secrets(namespace).Delete(ctx, tc.Config.DLQS3Bucket, metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete s3 secret for dlq: %w", err)
 	}
@@ -392,12 +402,14 @@ func (tc TestContext) PushFile(ctx context.Context, path string) error {
 // S3 func
 
 func (tc TestContext) CreateS3Buckets(ctx context.Context) error {
-	err := tc.createS3Bucket(ctx, tc.Config.OutputS3Bucket)
-	if err != nil {
-		return fmt.Errorf("failed to create output s3 bucket: %w", err)
+	for _, bucket := range tc.Config.OutputS3Buckets {
+		err := tc.createS3Bucket(ctx, bucket)
+		if err != nil {
+			return fmt.Errorf("failed to create output s3 bucket: %w", err)
+		}
 	}
 
-	err = tc.createS3Bucket(ctx, tc.Config.DLQS3Bucket)
+	err := tc.createS3Bucket(ctx, tc.Config.DLQS3Bucket)
 	if err != nil {
 		return fmt.Errorf("failed to create dlq s3 bucket: %w", err)
 	}
@@ -406,12 +418,14 @@ func (tc TestContext) CreateS3Buckets(ctx context.Context) error {
 }
 
 func (tc TestContext) DeleteS3Buckets(ctx context.Context) error {
-	err := tc.deleteS3Bucket(ctx, tc.Config.OutputS3Bucket)
-	if err != nil {
-		return fmt.Errorf("failed to delete output s3 bucket: %w", err)
+	for _, bucket := range tc.Config.OutputS3Buckets {
+		err := tc.deleteS3Bucket(ctx, bucket)
+		if err != nil {
+			return fmt.Errorf("failed to delete output s3 bucket: %w", err)
+		}
 	}
 
-	err = tc.deleteS3Bucket(ctx, tc.Config.DLQS3Bucket)
+	err := tc.deleteS3Bucket(ctx, tc.Config.DLQS3Bucket)
 	if err != nil {
 		return fmt.Errorf("failed to delete dlq s3 bucket: %w", err)
 	}
@@ -463,17 +477,18 @@ func (tc TestContext) deleteS3Bucket(_ context.Context, bucket string) error {
 	return nil
 }
 
-func S3Path(eventType EventType, date time.Time) string {
+func S3Path(eventType EventType, date time.Time, outputNumber int) string {
 	return fmt.Sprintf(
-		"ccx-exporter/output/%s/%04d-%02d-%02d/",
+		"ccx-exporter/output-%d/%s/%04d-%02d-%02d/",
+		outputNumber,
 		eventType,
 		date.Year(), date.Month(), date.Day(),
 	)
 }
 
-func (tc TestContext) GetS3Object(ctx context.Context, key string) ([]byte, error) {
+func (tc TestContext) GetS3Object(ctx context.Context, bucket, key string) ([]byte, error) {
 	obj, err := tc.S3Client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: &tc.Config.OutputS3Bucket,
+		Bucket: &bucket,
 		Key:    &key,
 	})
 	if err != nil {

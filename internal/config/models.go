@@ -9,7 +9,7 @@ type Config struct {
 	DeadLetterQueue  S3
 	Kafka            Kafka
 	Valkey           Valkey
-	S3               S3
+	Output           Output
 }
 
 type Metrics struct {
@@ -28,18 +28,24 @@ const (
 	EncoderTypeConsole EncoderType = "console"
 )
 
+type Output struct {
+	S3 []S3
+}
+
 type S3 struct {
-	Bucket       string
+	SecretPath string
+
+	Bucket       string `secret:"bucket"`
 	KeyPrefix    string
-	BaseEndpoint string
-	Region       string
+	BaseEndpoint string `secret:"endpoint"`
+	Region       string `secret:"aws_region"`
 	UsePathStyle bool
 	Creds        AWSCreds
 }
 
 type AWSCreds struct {
-	AccessKeyID     string
-	SecretAccessKey string
+	AccessKeyID     string `secret:"aws_access_key_id"`
+	SecretAccessKey string `secret:"aws_secret_access_key"`
 }
 
 func (c AWSCreds) String() string {

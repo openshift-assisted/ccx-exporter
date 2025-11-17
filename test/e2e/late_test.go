@@ -50,10 +50,12 @@ var _ = Describe("Checking late data handling", func() {
 		It("should succeed but report late data", func(ctx SpecContext) {
 			By("eventually creating a file in s3 (result)")
 			Eventually(func(g Gomega, ctx context.Context) {
-				objects, err := testContext.ListS3Objects(ctx, testConfig.OutputS3Bucket, "")
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(len(objects)).To(Equal(1))
-				g.Expect(objects[0]).To(ContainSubstring(".events/2024-10-27"))
+				for _, bucket := range testConfig.OutputS3Buckets {
+					objects, err := testContext.ListS3Objects(ctx, bucket, "")
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(len(objects)).To(Equal(1))
+					g.Expect(objects[0]).To(ContainSubstring(".events/2024-10-27"))
+				}
 			}).WithContext(ctx).WithTimeout(time.Minute).WithPolling(5 * time.Second).Should(Succeed())
 
 			By("eventually incrementing the late metrics")
