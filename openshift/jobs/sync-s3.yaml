@@ -1,0 +1,80 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: sync-s3
+parameters:
+# Job
+- name: JOB_NAME
+  value: sync-s3
+- name: RESTART_POLICY
+  value: "Never"
+- name: IMAGE_NAME
+  value: ccx-exporter
+- name: IMAGE_TAG
+  value: latest
+- name: IMAGE_PULL_POLICY
+  value: IfNotPresent
+- name: CPU_LIMIT
+  value: "4"
+- name: CPU_REQUEST
+  value: 500m
+- name: MEMORY_LIMIT
+  value: 512Mi
+- name: MEMORY_REQUEST
+  value: 256Mi
+
+# s3
+- name: SRC_SECRETNAME
+  value: src-secret
+- name: SRC_PREFIX
+  value: src-prefix
+- name: DST_SECRETNAME
+  value: dst-secret
+- name: DST_PREFIX
+  value: dst-prefix
+
+objects:
+- apiVersion: v1
+  kind: Job
+  metadata:
+    name: ${JOB_NAME}
+  spec:
+    template:
+      spec:
+        restartPolicy: ${RESTART_POLICY}
+        containers:
+        - name: sync-s3
+          command:
+          - bash
+          - -c
+          - /opt/ccx-exporter/bin/sync.sh
+          - --src-secret
+          - /mnt/secrets/src
+          - --src-prefix
+          - ${SRC_PREFIX}
+          - --dst-secret
+          - /mnt/secrets/dst
+          - --dst-prefix
+          - ${DST_PREFIX}
+          image: ${IMAGE_NAME}:${IMAGE_TAG}
+          imagePullPolicy: ${IMAGE_PULL_POLICY}
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+          volumeMounts:
+          - name: src
+            mountPath: /mnt/secrets/src
+          - name: dst
+            mountPath: /mnt/secrets/dst
+        volumes:
+        - name: src
+          secret:
+            secretName: ${SRC_SECRETNAME}
+        - name: dst
+          secret:
+            secretName: ${DST_SECRETNAME}
