@@ -48,15 +48,7 @@ objects:
           command:
           - bash
           - -c
-          - /opt/ccx-exporter/bin/sync.sh
-          - --src-secret
-          - /mnt/secrets/src
-          - --src-prefix
-          - ${SRC_PREFIX}
-          - --dst-secret
-          - /mnt/secrets/dst
-          - --dst-prefix
-          - ${DST_PREFIX}
+          - /opt/ccx-exporter/bin/sync.sh --src-secret /mnt/secrets/src --src-prefix ${SRC_PREFIX} --dst-secret /mnt/secrets/dst --dst-prefix ${DST_PREFIX}
           image: ${IMAGE_NAME}:${IMAGE_TAG}
           imagePullPolicy: ${IMAGE_PULL_POLICY}
           resources:
