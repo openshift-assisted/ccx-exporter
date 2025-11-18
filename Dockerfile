@@ -17,6 +17,12 @@ COPY . .
 
 RUN --mount=type=cache,mode=0755,target=/go/pkg/mod GOOS=linux make build.local BUILD_ARGS="${BUILD_ARGS}"
 
+# Install tools
+RUN mkdir -p /tmp/rclone && \
+    cd /tmp/rclone && \
+    curl https://downloads.rclone.org/v1.71.2/rclone-v1.71.2-linux-amd64.zip --output rclone.zip && \
+    unzip rclone.zip
+
 
 ############
 ## Licenses
@@ -36,20 +42,25 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5-1736404155
 ARG release=main
 ARG version=latest
 
-LABEL com.redhat.component ccx-exporter
-LABEL description "Pipeline processors to export assisted installer events to s3"
-LABEL summary "Pipeline processors to export assisted installer events to s3"
-LABEL io.k8s.description "Pipeline processors to export assisted installer events to s3"
-LABEL distribution-scope public
-LABEL name ccx-exporter
-LABEL release ${release}
-LABEL version ${version}
-LABEL url https://github.com/openshift-assisted/ccx-exporter
-LABEL vendor "Red Hat, Inc."
-LABEL maintainer "Red Hat"
+LABEL com.redhat.component=ccx-exporter \
+    description="Pipeline processors to export assisted installer events to s3" \
+    summary="Pipeline processors to export assisted installer events to s3" \
+    io.k8s.description="Pipeline processors to export assisted installer events to s3" \
+    distribution-scope=public \
+    name=ccx-exporter \
+    release=${release} \
+    version=${version} \
+    url=https://github.com/openshift-assisted/ccx-exporter \
+    vendor="Red Hat, Inc." \
+    maintainer="Red Hat"
 
 COPY --from=build /build/build/ccx-exporter /usr/bin/ccx-exporter
+
 COPY --from=licenses /tmp/licenses /licenses
+
+COPY --from=build /tmp/rclone/rclone-v1.71.2-linux-amd64/rclone /usr/bin/rclone
+COPY scripts/ /opt/ccx-exporter/bin/
+RUN chmod +x /opt/ccx-exporter/bin/sync.sh
 
 # Metrics port
 EXPOSE 7777
