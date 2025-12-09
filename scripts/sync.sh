@@ -103,13 +103,13 @@ if [ ! -d "${DST_SECRET}" ]; then
     exit 1
 fi
 
-if [ ! ${SRC_PREFIX} == "" ] && [[ ! ${SRC_PREFIX} != */ ]]; then
+if [ ! ${SRC_PREFIX} == "" ] && [[ ${SRC_PREFIX} != */ ]]; then
     logWarn "Source prefix (${SRC_PREFIX}) does not end with a slash, adding one"
     
     SRC_PREFIX="${SRC_PREFIX}/"
 fi
 
-if [ ! ${DST_PREFIX} == "" ] && [[ ! ${DST_PREFIX} != */ ]]; then
+if [ ! ${DST_PREFIX} == "" ] && [[ ${DST_PREFIX} != */ ]]; then
     logWarn "Destination prefix (${DST_PREFIX}) does not end with a slash, adding one"
 
     DST_PREFIX="${DST_PREFIX}/"
