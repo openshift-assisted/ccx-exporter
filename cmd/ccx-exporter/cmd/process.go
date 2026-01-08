@@ -140,7 +140,7 @@ var processCmd = &cobra.Command{
 		processingErrorWriter := processingerror.NewS3Writer(dlqS3Client, conf.DeadLetterQueue.Bucket, conf.DeadLetterQueue.KeyPrefix)
 
 		// Create S3 repo for projected event
-		projectedEventWriter, err := newS3Writer(ctx)
+		projectedEventWriter, err := newS3Repo(ctx)
 		if err != nil {
 			logger.Error(err, "failed to create s3 repo")
 
@@ -186,7 +186,7 @@ var processCmd = &cobra.Command{
 	},
 }
 
-func newS3Writer(ctx context.Context) (repo.ProjectionWriter, error) {
+func newS3Repo(ctx context.Context) (repo.ProjectionWriter, error) {
 	writers := make([]repo.ProjectionWriter, 0)
 
 	if len(conf.Output.S3) == 0 {
@@ -199,7 +199,7 @@ func newS3Writer(ctx context.Context) (repo.ProjectionWriter, error) {
 			return nil, fmt.Errorf("failed to create s3 client: %w", err)
 		}
 
-		writer := projectedevent.NewS3Writer(s3Client, c.Bucket, c.KeyPrefix)
+		writer := projectedevent.NewS3Repo(s3Client, c.Bucket, c.KeyPrefix)
 
 		writers = append(writers, writer)
 	}

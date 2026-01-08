@@ -17,6 +17,7 @@ const (
 	eventNameInfraEnvState = "InfraEnv"
 
 	categoryUnknownEventName = "unknown_name"
+	categoryMarshalError     = "marshal_error"
 )
 
 type Main struct {

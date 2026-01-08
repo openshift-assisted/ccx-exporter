@@ -15,14 +15,26 @@ type HostState struct {
 	Metadata  map[string]interface{}
 }
 
-type Projection struct {
+type ProjectionMeta struct {
 	ID        string
 	Timestamp time.Time
-	Payload   map[string]interface{}
+}
+
+type Projection struct {
+	Meta    ProjectionMeta
+	Payload []byte
 }
 
 type (
 	ProjectedClusterEvent Projection
 	ProjectedClusterState Projection
 	ProjectedInfraEnv     Projection
+)
+
+type Type string
+
+const (
+	ClusterEventType Type = "event"
+	ClusterStateType Type = "cluster"
+	InfraEnvType     Type = "infraenv"
 )

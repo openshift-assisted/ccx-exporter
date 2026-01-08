@@ -12,6 +12,15 @@ type Config struct {
 	Output           Output
 }
 
+type CompactConfig struct {
+	Since    *time.Time
+	Parallel int
+	MaxSize  int
+	Logs     Logs
+	Input    S3
+	Output   S3
+}
+
 type Metrics struct {
 	Port int
 }

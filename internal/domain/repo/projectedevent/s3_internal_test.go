@@ -9,18 +9,18 @@ import (
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
 )
 
-// Not part of the contract, but the part of the key after the final '/' is supposed to start by [0-9a-f]
+// Not part of the initial contract, but the part of the key after the final '/' is supposed to start by [0-9a-f]
 // This test should stay here until the consumer has this extra constraint.
 func FuzzComputeObjectKey(f *testing.F) {
 	for _, seed := range []string{"abcdef012", "78xyz", "Invalid", "!abcdef", "zxyw"} {
 		f.Add(seed)
 	}
 
-	repo := S3Writer{}
+	repo := S3Repo{}
 	now := time.Now()
 
 	f.Fuzz(func(t *testing.T, id string) {
-		_, err := repo.computeObjectKey("type", entity.Projection{
+		_, err := repo.computeObjectKey("type", entity.ProjectionMeta{
 			ID:        id,
 			Timestamp: now,
 		})
@@ -45,7 +45,7 @@ func FuzzComputeObjectKey(f *testing.F) {
 // Object key last part must start by [0-9a-f]
 // This test is fragile to ensure this contract is respected
 func TestComputeObjectKey(t *testing.T) {
-	repo := S3Writer{}
+	repo := S3Repo{}
 
 	testcases := []struct {
 		id         string
@@ -85,7 +85,7 @@ func TestComputeObjectKey(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		key, err := repo.computeObjectKey("custom", entity.Projection{
+		key, err := repo.computeObjectKey("custom", entity.ProjectionMeta{
 			ID:        tc.id,
 			Timestamp: tc.ts,
 		})
