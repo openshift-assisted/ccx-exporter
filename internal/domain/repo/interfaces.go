@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
 	"github.com/openshift-assisted/ccx-exporter/pkg/pipeline"
@@ -46,4 +47,29 @@ type ProjectionWriter interface {
 	ProjectedClusterEventWriter
 	ProjectedClusterStateWriter
 	ProjectedInfraEnvWriter
+}
+
+type ProjectedClusterEventReader interface {
+	ListProjectedClusterEvent(ctx context.Context, filter ListProjectionFilter) ([]entity.ProjectionMeta, error)
+	GetProjectedClusterEvent(ctx context.Context, meta entity.ProjectionMeta) (entity.ProjectedClusterEvent, error)
+}
+
+type ProjectedClusterStateReader interface {
+	ListProjectedClusterState(ctx context.Context, filter ListProjectionFilter) ([]entity.ProjectionMeta, error)
+	GetProjectedClusterState(ctx context.Context, meta entity.ProjectionMeta) (entity.ProjectedClusterState, error)
+}
+
+type ProjectedInfraEnvReader interface {
+	ListProjectedInfraEnv(ctx context.Context, filter ListProjectionFilter) ([]entity.ProjectionMeta, error)
+	GetProjectedInfraEnv(ctx context.Context, meta entity.ProjectionMeta) (entity.ProjectedInfraEnv, error)
+}
+
+type ProjectionReader interface {
+	ProjectedClusterEventReader
+	ProjectedClusterStateReader
+	ProjectedInfraEnvReader
+}
+
+type ListProjectionFilter struct {
+	Date time.Time
 }

@@ -1,6 +1,6 @@
 ###################
 ## Build go binary
-FROM registry.access.redhat.com/ubi9/go-toolset:1.22.9-1736729788 AS build
+FROM registry.access.redhat.com/ubi9/go-toolset:1.25.3-1767788444 AS build
 
 ARG BUILD_ARGS
 
@@ -26,7 +26,7 @@ RUN mkdir -p /tmp/rclone && \
 
 ############
 ## Licenses
-FROM registry.access.redhat.com/ubi9/go-toolset:1.22.9-1736729788 AS licenses
+FROM registry.access.redhat.com/ubi9/go-toolset:1.25.3-1767788444 AS licenses
 
 ADD . /app
 WORKDIR /app

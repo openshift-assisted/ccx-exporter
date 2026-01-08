@@ -4,13 +4,16 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
 	"github.com/openshift-assisted/ccx-exporter/internal/domain/entity"
 )
 
-const categoryErrInvalidClusterEvent = "invalid_cluster_event"
+const (
+	categoryErrInvalidClusterEvent = "invalid_cluster_event"
+)
 
 func (m Main) processClusterEvent(ctx context.Context, event entity.Event) error {
 	// Extract mandatory fields
@@ -43,10 +46,18 @@ func (m Main) processClusterEvent(ctx context.Context, event entity.Event) error
 	payload["event_id"] = eventID
 	payload["event_time"] = FormatDate(ts)
 
+	// Marshal Payload
+	b, err := json.Marshal(payload)
+	if err != nil {
+		return common.NewErrProcessingError(err, categoryMarshalError, nil, "failed to marshal payload")
+	}
+
 	clusterEvent := entity.ProjectedClusterEvent{
-		ID:        eventID,
-		Timestamp: ts,
-		Payload:   payload,
+		Meta: entity.ProjectionMeta{
+			ID:        eventID,
+			Timestamp: ts,
+		},
+		Payload: b,
 	}
 
 	// Call repo

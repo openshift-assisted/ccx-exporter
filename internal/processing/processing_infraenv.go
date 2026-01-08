@@ -2,6 +2,7 @@ package processing
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/openshift-assisted/ccx-exporter/internal/common"
@@ -45,11 +46,19 @@ func (m Main) processInfraEnv(ctx context.Context, event entity.Event) error {
 
 	payload["infraenv_state_id"] = infraEnvStateID
 
+	// Marshal Payload
+	b, err := json.Marshal(payload)
+	if err != nil {
+		return common.NewErrProcessingError(err, categoryMarshalError, nil, "failed to marshal payload")
+	}
+
 	// Create Projection
 	infraEnv := entity.ProjectedInfraEnv{
-		ID:        infraEnvStateID,
-		Timestamp: updatedAt,
-		Payload:   payload,
+		Meta: entity.ProjectionMeta{
+			ID:        infraEnvStateID,
+			Timestamp: updatedAt,
+		},
+		Payload: b,
 	}
 
 	// Store

@@ -1,0 +1,104 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: compact-s3
+parameters:
+# Job
+- name: JOB_NAME
+  value: compact-s3
+- name: RESTART_POLICY
+  value: "Never"
+- name: IMAGE_NAME
+  value: ccx-exporter
+- name: IMAGE_TAG
+  value: latest
+- name: IMAGE_PULL_POLICY
+  value: IfNotPresent
+- name: CPU_LIMIT
+  value: "2"
+- name: CPU_REQUEST
+  value: "1"
+- name: MEMORY_LIMIT
+  value: 2Gi
+- name: MEMORY_REQUEST
+  value: 1Gi
+
+# processing
+- name: LOGS_LEVEL
+  value: "0"
+- name: CONCURRENCY
+  value: "8"
+- name: MAX_SIZE
+  value: "104857600" # 100MB
+- name: SINCE
+  value: ""
+
+# s3
+- name: SRC_SECRETNAME
+  value: src-secret
+- name: SRC_PREFIX
+  value: src-prefix
+- name: DST_SECRETNAME
+  value: dst-secret
+- name: DST_PREFIX
+  value: dst-prefix
+
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ${JOB_NAME}
+  data:
+    config.yaml: |-
+      logs:
+        level: ${LOGS_LEVEL}
+      input:
+        keyPrefix: ${SRC_PREFIX}
+        secretPath: /mnt/secrets/src/
+      output:
+        keyPrefix: ${DST_PREFIX}
+        secretPath: /mnt/secrets/dst/
+      parallel: ${CONCURRENCY}
+      maxSize: ${MAX_SIZE}
+      since: ${SINCE}
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: ${JOB_NAME}
+  spec:
+    template:
+      spec:
+        restartPolicy: ${RESTART_POLICY}
+        containers:
+        - name: compact-s3
+          args:
+          - compact
+          - --config
+          - /etc/processing/config.yaml
+          image: ${IMAGE_NAME}:${IMAGE_TAG}
+          imagePullPolicy: ${IMAGE_PULL_POLICY}
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+          volumeMounts:
+          - name: config
+            mountPath: /etc/processing/
+          - name: src
+            mountPath: /mnt/secrets/src/
+          - name: dst
+            mountPath: /mnt/secrets/dst/
+        volumes:
+        - name: config
+          configMap:
+            name: ${JOB_NAME}
+        - name: src
+          secret:
+            secretName: ${SRC_SECRETNAME}
+        - name: dst
+          secret:
+            secretName: ${DST_SECRETNAME}

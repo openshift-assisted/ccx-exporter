@@ -89,11 +89,19 @@ func (m Main) processClusterState(ctx context.Context, event entity.Event) error
 
 	payload["cluster_state_id"] = clusterStateID
 
+	// Marshal Payload
+	b, err := json.Marshal(payload)
+	if err != nil {
+		return common.NewErrProcessingError(err, categoryMarshalError, nil, "failed to marshal payload")
+	}
+
 	// Create ClusterState
 	clusterState := entity.ProjectedClusterState{
-		ID:        clusterStateID,
-		Timestamp: updatedAt,
-		Payload:   payload,
+		Meta: entity.ProjectionMeta{
+			ID:        clusterStateID,
+			Timestamp: updatedAt,
+		},
+		Payload: b,
 	}
 
 	// Store

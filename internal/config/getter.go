@@ -17,22 +17,12 @@ const prefix = "CCXEXPORTER"
 func Parse(confFile string) (*Config, error) {
 	ret := Config{}
 
-	setDefault()
-
-	viper.SetEnvPrefix(prefix)
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.AutomaticEnv() // read in environment variables that match
-
-	if len(confFile) > 0 {
-		viper.SetConfigFile(confFile)
-
-		err := viper.ReadInConfig()
-		if err != nil {
-			return nil, fmt.Errorf("failed to read config file %v: %w", confFile, err)
-		}
+	err := parseCommon(confFile)
+	if err != nil {
+		return nil, err
 	}
 
-	err := viper.Unmarshal(&ret)
+	err = viper.Unmarshal(&ret)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
@@ -50,6 +40,52 @@ func Parse(confFile string) (*Config, error) {
 	}
 
 	return &ret, nil
+}
+
+// ParseCompact reads tge configuration file given as parameter.
+func ParseCompact(confFile string) (*CompactConfig, error) {
+	ret := CompactConfig{}
+
+	err := parseCommon(confFile)
+	if err != nil {
+		return nil, err
+	}
+
+	err = viper.Unmarshal(&ret)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+	}
+
+	err = loadS3Config(&ret.Input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse input s3 config: %w", err)
+	}
+
+	err = loadS3Config(&ret.Output)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse output s3 config: %w", err)
+	}
+
+	return &ret, nil
+}
+
+func parseCommon(confFile string) error {
+	setDefault()
+
+	viper.SetEnvPrefix(prefix)
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv() // read in environment variables that match
+
+	if len(confFile) > 0 {
+		viper.SetConfigFile(confFile)
+
+		err := viper.ReadInConfig()
+		if err != nil {
+			return fmt.Errorf("failed to read config file %v: %w", confFile, err)
+		}
+	}
+
+	return nil
 }
 
 func setDefault() {
