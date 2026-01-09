@@ -92,8 +92,6 @@ func CreateTestConfig(test string) TestConfig {
 		ValkeyURL:      fmt.Sprintf("valkey-%s-0.valkey-%s-headless:6379", name, name),
 		OutputS3Buckets: []string{
 			fmt.Sprintf("%s-result-0", name),
-			fmt.Sprintf("%s-result-1", name),
-			fmt.Sprintf("%s-result-2", name),
 		},
 		DLQS3Bucket: fmt.Sprintf("%s-dlq", name),
 	}
@@ -263,8 +261,6 @@ func (tc TestContext) DeployProcessing(ctx context.Context) error {
 			"VALKEY_URL":               tc.Config.ValkeyURL,
 			"KAFKA_TOPIC":              tc.Config.KafkaTopic,
 			"S3_BUCKET_SECRETNAME_0":   tc.Config.OutputS3Buckets[0],
-			"S3_BUCKET_SECRETNAME_1":   tc.Config.OutputS3Buckets[1],
-			"S3_BUCKET_SECRETNAME_2":   tc.Config.OutputS3Buckets[2],
 			"S3_DLQ_BUCKET_SECRETNAME": tc.Config.DLQS3Bucket,
 		},
 	)

@@ -2,8 +2,6 @@ NAMESPACE                := ccx-exporter
 DEPLOYMENT_NAME          := ccx-exporter
 VALKEY_URL               := valkey-ccx-exporter-0.valkey-ccx-exporter-headless:6379
 S3_BUCKET_SECRETNAME_0   := ccx-processing-result-0
-S3_BUCKET_SECRETNAME_1   := ccx-processing-result-1
-S3_BUCKET_SECRETNAME_2   := ccx-processing-result-2
 S3_DLQ_BUCKET_SECRETNAME := ccx-processing-dlq
 KAFKA_TOPIC              := assisted-service-events
 
@@ -61,8 +59,6 @@ local.localstack:
 .PHONY: local.localstack.buckets
 local.localstack.buckets:
 	@$(KUBECTL) exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-result-0
-	@$(KUBECTL) exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-result-1
-	@$(KUBECTL) exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-result-2
 	@$(KUBECTL) exec -t deploy/localstack -- awslocal s3api create-bucket --bucket ccx-processing-dlq
 
 .PHONY: local.delete
@@ -100,8 +96,6 @@ local.processing:
 		-p VALKEY_URL=$(VALKEY_URL) \
 		-p S3_USE_PATH_STYLE=true \
 		-p OUTPUT_S3_0_SECRETNAME=$(S3_BUCKET_SECRETNAME_0) \
-		-p OUTPUT_S3_1_SECRETNAME=$(S3_BUCKET_SECRETNAME_1) \
-		-p OUTPUT_S3_2_SECRETNAME=$(S3_BUCKET_SECRETNAME_2) \
 		-p DLQ_S3_SECRETNAME=$(S3_DLQ_BUCKET_SECRETNAME) \
 		-p KAFKA_TOPIC=$(KAFKA_TOPIC) \
 		-p KAFKA_USE_SCRAM_AUTH=false \

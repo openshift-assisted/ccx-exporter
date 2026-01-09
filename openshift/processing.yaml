@@ -49,14 +49,6 @@ parameters:
   value: ccx-processing-result
 - name: OUTPUT_S3_0_PREFIX
   value: ccx-exporter/output-0/
-- name: OUTPUT_S3_1_SECRETNAME
-  value: ccx-processing-result
-- name: OUTPUT_S3_1_PREFIX
-  value: ccx-exporter/output-1/
-- name: OUTPUT_S3_2_SECRETNAME
-  value: ccx-processing-result
-- name: OUTPUT_S3_2_PREFIX
-  value: ccx-exporter/output-2/
 
 
 # Kafka
@@ -160,12 +152,6 @@ objects:
         - usePathStyle: ${S3_USE_PATH_STYLE}
           keyPrefix: ${OUTPUT_S3_0_PREFIX}
           secretPath: /mnt/s3/output/${OUTPUT_S3_0_SECRETNAME}
-        - usePathStyle: ${S3_USE_PATH_STYLE}
-          keyPrefix: ${OUTPUT_S3_1_PREFIX}
-          secretPath: /mnt/s3/output/${OUTPUT_S3_1_SECRETNAME}
-        - usePathStyle: ${S3_USE_PATH_STYLE}
-          keyPrefix: ${OUTPUT_S3_2_PREFIX}
-          secretPath: /mnt/s3/output/${OUTPUT_S3_2_SECRETNAME}
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -270,10 +256,6 @@ objects:
             mountPath: /etc/processing/
           - name: output-0
             mountPath: /mnt/s3/output/${OUTPUT_S3_0_SECRETNAME}
-          - name: output-1
-            mountPath: /mnt/s3/output/${OUTPUT_S3_1_SECRETNAME}
-          - name: output-2
-            mountPath: /mnt/s3/output/${OUTPUT_S3_2_SECRETNAME}
           - name: dlq
             mountPath: /mnt/s3/dlq/${DLQ_S3_SECRETNAME}
         volumes:
@@ -287,12 +269,6 @@ objects:
         - name: output-0
           secret:
             secretName: ${OUTPUT_S3_0_SECRETNAME}
-        - name: output-1
-          secret:
-            secretName: ${OUTPUT_S3_1_SECRETNAME}
-        - name: output-2
-          secret:
-            secretName: ${OUTPUT_S3_2_SECRETNAME}
         - name: dlq
           secret:
             secretName: ${DLQ_S3_SECRETNAME}
