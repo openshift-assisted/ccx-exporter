@@ -20,7 +20,7 @@ parameters:
 - name: CPU_REQUEST
   value: "1"
 - name: MEMORY_LIMIT
-  value: 2Gi
+  value: 2.2Gi
 - name: MEMORY_REQUEST
   value: 1Gi
 
