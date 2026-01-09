@@ -16,19 +16,19 @@ parameters:
 - name: IMAGE_PULL_POLICY
   value: IfNotPresent
 - name: CPU_LIMIT
-  value: "2"
-- name: CPU_REQUEST
   value: "1"
+- name: CPU_REQUEST
+  value: "0.5"
 - name: MEMORY_LIMIT
-  value: 2.2Gi
+  value: 1.1Gi
 - name: MEMORY_REQUEST
-  value: 1Gi
+  value: 500Mi
 
 # processing
 - name: LOGS_LEVEL
   value: "0"
 - name: CONCURRENCY
-  value: "8"
+  value: "3"
 - name: MAX_SIZE
   value: "104857600" # 100MB
 - name: SCHEDULE
